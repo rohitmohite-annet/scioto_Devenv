@@ -97,6 +97,15 @@ def top_5plot():
     ax.set_ylabel('Amount Operating Expense per sq.ft ', size=15)
 
 
+    def currency(x, pos):
+        """The two args are the value and tick position"""
+        if x >= 1e6:
+            s = '${:1.1f}M'.format(x * 1e-6)
+        elif x >= 1e3:
+            s = '${:1.0f}K'.format(x * 1e-3)
+        else:
+            s = '${:1.0f}'.format(x)
+        return s
 
     def change_width(ax, new_value):
         for patch in ax.patches:
@@ -128,7 +137,7 @@ def top_5plot():
 
     for patch in new_patches:
         ax.add_patch(patch)
-
+    print('top5',new_patches)
     sns.despine(top=True, right=True)
 
     ax.tick_params(axis=u'both', which=u'both', length=0)
@@ -138,8 +147,10 @@ def top_5plot():
 
     plt.ticklabel_format(style='plain', axis='y')
     plt.rcParams["font.family"] = "Open Sans"
+    ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
     plt.savefig("top5_exp_Persqft.png")
+    new_patches.clear()
 
 def comp_YTM():
     current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
@@ -166,12 +177,22 @@ def Expensecomp_persqft_Plot():
     lastyear_name,last_month_Expense,currentyear_name,current_month_Expense = comp_YTM()
     print(lastyear_name,last_month_Expense,currentyear_name,current_month_Expense)
 
-    x_axis = [str(lastyear_name), str(currentyear_name)]
-    y_axis = [abs(last_month_Expense), abs(current_month_Expense)]
+    x_ax = [str(lastyear_name), str(currentyear_name)]
+    y_ax = [abs(last_month_Expense), abs(current_month_Expense)]
     sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
-    ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
+    ax = sns.barplot(x=x_ax, y=y_ax, joinstyle='bevel')
     ax.set_ylabel('Amount Operating Expense per sq.ft ', size=15)
     ax.figure.set_size_inches(8, 7.3)
+
+    def currency(x, pos):
+        """The two args are the value and tick position"""
+        if x >= 1e6:
+            s = '${:1.1f}M'.format(x * 1e-6)
+        elif x >= 1e3:
+            s = '${:1.0f}K'.format(x * 1e-3)
+        else:
+            s = '${:1.0f}'.format(x)
+        return s
 
     def change_width(ax, new_value):
         for patch in ax.patches:
@@ -192,41 +213,43 @@ def Expensecomp_persqft_Plot():
     for patch in reversed(ax.patches):
 
         bb = patch.get_bbox()
-
         p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
                                 abs(bb.width), abs(bb.height),
-                                boxstyle="round, pad=0.030,rounding_size = 0.055",
+                                boxstyle="round, pad=0.030,rounding_size = 0.030",
                                 ec="none", fc='#728137',
                                 mutation_aspect=mut_Aspect
                                 )
+
         patch.remove()
         new_patches.append(p_bbox)
 
     for patch in new_patches:
         ax.add_patch(patch)
-
+    print('comparsion', new_patches)
     sns.despine(top=True, right=True)
 
     ax.tick_params(axis=u'both', which=u'both', length=0)
     if abs(current_month_Expense) > 1000000 or abs(last_month_Expense) > 1000000:
-        for index, value in enumerate(y_axis):
+        for index, value in enumerate(y_ax):
             plt.text(index, value // 1.02, '$' + str(round(value / 1000000, 2)) + ' M', fontfamily='Open Sans',
                      fontsize=20, ha='center', va='top',
                      color='white', weight='bold')
     else:
-        for index, value in enumerate(y_axis):
+        for index, value in enumerate(y_ax):
             plt.text(index, value // 1.02, '$' + str(round(value / 1000, 2)) + ' K', fontsize=20, ha='center',
                      va='top',
                      color='white', weight='bold')
     plt.tick_params(labelsize=18)
     plt.ticklabel_format(style='plain', axis='y')
     plt.rcParams["font.family"] = "Open Sans"
+    ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
     plt.savefig('YTM_COMPARISON.png')
 
 
 
 if __name__ == "__main__":
-    top_5plot()
+    # top_5plot()
     Expensecomp_persqft_Plot()
+
 
