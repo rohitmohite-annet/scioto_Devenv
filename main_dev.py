@@ -89,6 +89,7 @@ def top_5plot():
     ax.set_ylabel('Amount Operating Expense per sq.ft ', size=15)
 
 
+
     def change_width(ax, new_value):
         for patch in ax.patches:
             current_width = patch.get_width()
@@ -127,17 +128,15 @@ def top_5plot():
     for index, value in enumerate(y_axis):
         plt.text(index, value // 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
                  color='white', weight='bold')
-    ticks = ax.get_yticks()
-    # formatted the values into strings beginning with dollar sign
-    plt.ticklabel_format(style='plain', axis='y',)
+
+    plt.ticklabel_format(style='plain', axis='y')
     plt.rcParams["font.family"] = "Open Sans"
-    # plt.tick_params(length=-0.004, axis='x')
-    # ax.set(style='#DFE4AC')
     plt.tight_layout()
     plt.savefig("top5_exp_Persqft.png")
     plt.show()
 
-
+def comp_YTM():
+    return 'd'
 if __name__ == "__main__":
     top_5plot()
 
