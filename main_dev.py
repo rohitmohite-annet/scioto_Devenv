@@ -24,3 +24,33 @@ sqft = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\Vi
 sqft.drop_duplicates(subset="PropertyID",inplace=True)
 print(sqft.head())
 print('Unitsqft --->',sqft['Unit Square Feet'].isnull().sum())
+
+merged_sqft = data.merge(sqft, on='PropertyID', how='left')
+print('merge',merged_sqft.shape)
+print('data',data.shape)
+
+def persq_dataframe(merged_sqft):
+    dict_new = dict()
+    Final_dataframe = pd.DataFrame()
+
+    def cal_NOI(df):
+        Revenue = df[df['L3'] == 'REVENUE']['Amount'].sum()
+        Expenses = df[df['L3'] == 'OPERATING EXPENSES']['Amount'].sum()
+        diff = Revenue - Expenses
+        return round(diff, 2), round(Revenue, 2), round(Expenses, 2)
+
+    def persq_cal(amount, persqft):
+        if persqft == 0:
+            return 0
+        else:
+            return round(amount / persqft, 2)
+
+    counter = 0
+    for i in list(merged_sqft['Property Name'].unique()):
+        print(i)
+        counter += 1
+        if counter ==3:
+            break
+
+if __name__ == "__main__":
+    persq_dataframe(merged_sqft)
