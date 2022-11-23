@@ -19,15 +19,19 @@ data = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\vi
 data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
 data = data[(data['Ledger'] == 'AA')]
 
-print(data.shape)
 sqft = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\Viewpropertyunitlease.csv',usecols=['PropertyID','Property Description','Unit Square Feet'])
 sqft.drop_duplicates(subset="PropertyID",inplace=True)
-print(sqft.head())
-print('Unitsqft --->',sqft['Unit Square Feet'].isnull().sum())
+print('sqft',sqft.shape)
 
-merged_sqft = data.merge(sqft, on='PropertyID', how='left')
-print('merge',merged_sqft.shape)
-print('data',data.shape)
+
+def join_data(data,sqft,year):
+    data = data[data['FiscalYear'] == int(year[-2:])]
+    merged_sqft = data.merge(sqft, on='PropertyID', how='left')
+    print(data.shape)
+    print('from func',merged_sqft['FiscalYear'].value_counts())
+    return merged_sqft
+
+
 
 def persq_dataframe(merged_sqft):
     dict_new = dict()
@@ -47,10 +51,33 @@ def persq_dataframe(merged_sqft):
 
     counter = 0
     for i in list(merged_sqft['Property Name'].unique()):
+        proprty_data = merged_sqft[merged_sqft['Property Name'] == i]
+
+        property_ID = proprty_data['PropertyID'].iloc[0]
+        persqft = proprty_data['Unit Square Feet'].iloc[0]
+        NOI_amount, Revenue_amount, Expenses_amount = cal_NOI(proprty_data)
+
+        NOI_persq = persq_cal(NOI_amount, persqft)
+        Revenue_persq = persq_cal(Revenue_amount, persqft)
+        Expenses_persq = persq_cal(Expenses_amount, persqft)
+        #     print(NOI_amount,Revenue_amount,Expenses_amount)
+        #     print('//')
+        #     print(persqft,NOI_persq,Revenue_persq,Expenses_persq)
+
+        towrite = {'property_ID': property_ID, 'propertyname': i, 'SquareFootage': persqft,
+                   'NOI_amount': NOI_amount, 'Revenue_amount': Revenue_amount, 'Expenses_amount': Expenses_amount,
+                   'NOI_persq': NOI_persq, 'Revenue_persq': Revenue_persq, 'Expenses_persq': Expenses_persq}
+
+        dataframe_to_write = pd.DataFrame([towrite], columns=towrite.keys())
+
+        Final_dataframe = Final_dataframe.append(dataframe_to_write, ignore_index=True)
         print(i)
         counter += 1
-        if counter ==3:
+        if counter ==10:
             break
-
+    return Final_dataframe
 if __name__ == "__main__":
-    persq_dataframe(merged_sqft)
+    data_2022 = join_data(data, sqft, '2022')
+    final_sq_2022 =  persq_dataframe(data_2022)
+    print(final_sq_2022.head())
+
