@@ -39,7 +39,16 @@ def join_data(data,sqft,year):
     print('data.shape',data.shape)
     return merged_sqft
 
+def getdata_range_YTM():
+    current_date = date.today()
+    last_day_of_prev_month = pd.to_datetime(date(current_date.year, current_date.month - 1, 20))
+    current_year = date.today().year
+    current_first_date = date(date.today().year, 1, 1)
 
+    previous_date = last_day_of_prev_month + pd.DateOffset(years=-1)
+    previous_year = current_year - 1
+    previous_first_date = date(previous_date.year, 1, 1)
+    return current_first_date,last_day_of_prev_month,previous_first_date,previous_date
 
 def persq_dataframe(merged_sqft):
     dict_new = dict()
@@ -136,8 +145,32 @@ def top_5plot():
     plt.show()
 
 def comp_YTM():
+    current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
+    current_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(current_first_date)) &
+                             (data['NetPostingPeriod'] <= pd.to_datetime(last_day_of_prev_month))]
+
+    previous_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(previous_first_date)) &
+                              (data['NetPostingPeriod'] <= pd.to_datetime(previous_date))]
+
+    # =======merge sq ft data========
+    last_year_data_sq_merge = previous_year_data.merge(sqft, on='PropertyID', how='left')
+    current_year_data_sq_merge = current_year_data.merge(sqft, on='PropertyID', how='left')
+    print(current_year_data.shape,current_year_data_sq_merge.shape)
+    print(previous_year_data.shape,last_year_data_sq_merge.shape)
+
+    # =======Per sq ft calculation each yaer========
+    last_year_persq = persq_dataframe(last_year_data_sq_merge)
+    this_year_persq = persq_dataframe(current_year_data_sq_merge)
+    print(last_year_persq.shape,this_year_persq.shape)
+
+    last_year_persq_amount = last_year_persq['NOI_persq'].sum()
+    current_year_persq_amount = this_year_persq['NOI_persq'].sum()
+    print(last_year_persq_amount,current_year_persq_amount)
     return 'd'
+
+
 if __name__ == "__main__":
-    top_5plot()
+    comp_YTM()
+    # top_5plot()
 
 
