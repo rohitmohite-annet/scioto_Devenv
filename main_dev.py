@@ -91,6 +91,7 @@ def top_5plot():
 
     x_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['propertyname'].to_list()
     y_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['NOI_persq'].to_list()
+
     sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     ax.figure.set_size_inches(10, 6)
@@ -137,7 +138,7 @@ def top_5plot():
 
     for patch in new_patches:
         ax.add_patch(patch)
-    print('top5',new_patches)
+    
     sns.despine(top=True, right=True)
 
     ax.tick_params(axis=u'both', which=u'both', length=0)
@@ -150,106 +151,105 @@ def top_5plot():
     ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
     plt.savefig("top5_exp_Persqft.png")
-    new_patches.clear()
 
-def comp_YTM():
-    current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
-    current_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(current_first_date)) &
-                             (data['NetPostingPeriod'] <= pd.to_datetime(last_day_of_prev_month))]
+# def comp_YTM():
+#     current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
+#     current_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(current_first_date)) &
+#                              (data['NetPostingPeriod'] <= pd.to_datetime(last_day_of_prev_month))]
+#
+#     previous_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(previous_first_date)) &
+#                               (data['NetPostingPeriod'] <= pd.to_datetime(previous_date))]
+#
+#     # =======merge sq ft data========
+#     last_year_data_sq_merge = previous_year_data.merge(sqft, on='PropertyID', how='left')
+#     current_year_data_sq_merge = current_year_data.merge(sqft, on='PropertyID', how='left')
+#
+#
+#     # =======Per sq ft calculation each yaer========
+#     last_year_persq = persq_dataframe(last_year_data_sq_merge)
+#     this_year_persq = persq_dataframe(current_year_data_sq_merge)
+#
+#     last_year_persq_amount = last_year_persq['NOI_persq'].sum()
+#     current_year_persq_amount = this_year_persq['NOI_persq'].sum()
+#     return str(previous_first_date.year) ,last_year_persq_amount,str(current_first_date.year),current_year_persq_amount
 
-    previous_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(previous_first_date)) &
-                              (data['NetPostingPeriod'] <= pd.to_datetime(previous_date))]
-
-    # =======merge sq ft data========
-    last_year_data_sq_merge = previous_year_data.merge(sqft, on='PropertyID', how='left')
-    current_year_data_sq_merge = current_year_data.merge(sqft, on='PropertyID', how='left')
-
-
-    # =======Per sq ft calculation each yaer========
-    last_year_persq = persq_dataframe(last_year_data_sq_merge)
-    this_year_persq = persq_dataframe(current_year_data_sq_merge)
-
-    last_year_persq_amount = last_year_persq['NOI_persq'].sum()
-    current_year_persq_amount = this_year_persq['NOI_persq'].sum()
-    return str(previous_first_date.year) ,last_year_persq_amount,str(current_first_date.year),current_year_persq_amount
-
-def Expensecomp_persqft_Plot():
-    lastyear_name,last_month_Expense,currentyear_name,current_month_Expense = comp_YTM()
-    print(lastyear_name,last_month_Expense,currentyear_name,current_month_Expense)
-
-    x_ax = [str(lastyear_name), str(currentyear_name)]
-    y_ax = [abs(last_month_Expense), abs(current_month_Expense)]
-    sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
-    ax = sns.barplot(x=x_ax, y=y_ax, joinstyle='bevel')
-    ax.set_ylabel('Amount Operating Expense per sq.ft ', size=15)
-    ax.figure.set_size_inches(8, 7.3)
-
-    def currency(x, pos):
-        """The two args are the value and tick position"""
-        if x >= 1e6:
-            s = '${:1.1f}M'.format(x * 1e-6)
-        elif x >= 1e3:
-            s = '${:1.0f}K'.format(x * 1e-3)
-        else:
-            s = '${:1.0f}'.format(x)
-        return s
-
-    def change_width(ax, new_value):
-        for patch in ax.patches:
-            current_width = patch.get_width()
-            diff = current_width - new_value
-
-            # we change the bar width
-            patch.set_width(new_value)
-
-            # we recenter the bar
-            patch.set_x(patch.get_x() + diff * .5)
-
-    change_width(ax, 0.40)
-
-    new_patches = []
-    mut_Aspect = max(current_month_Expense, last_month_Expense)
-
-    for patch in reversed(ax.patches):
-
-        bb = patch.get_bbox()
-        p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
-                                abs(bb.width), abs(bb.height),
-                                boxstyle="round, pad=0.030,rounding_size = 0.030",
-                                ec="none", fc='#728137',
-                                mutation_aspect=mut_Aspect
-                                )
-
-        patch.remove()
-        new_patches.append(p_bbox)
-
-    for patch in new_patches:
-        ax.add_patch(patch)
-    print('comparsion', new_patches)
-    sns.despine(top=True, right=True)
-
-    ax.tick_params(axis=u'both', which=u'both', length=0)
-    if abs(current_month_Expense) > 1000000 or abs(last_month_Expense) > 1000000:
-        for index, value in enumerate(y_ax):
-            plt.text(index, value // 1.02, '$' + str(round(value / 1000000, 2)) + ' M', fontfamily='Open Sans',
-                     fontsize=20, ha='center', va='top',
-                     color='white', weight='bold')
-    else:
-        for index, value in enumerate(y_ax):
-            plt.text(index, value // 1.02, '$' + str(round(value / 1000, 2)) + ' K', fontsize=20, ha='center',
-                     va='top',
-                     color='white', weight='bold')
-    plt.tick_params(labelsize=18)
-    plt.ticklabel_format(style='plain', axis='y')
-    plt.rcParams["font.family"] = "Open Sans"
-    ax.yaxis.set_major_formatter(currency)
-    plt.tight_layout()
-    plt.savefig('YTM_COMPARISON.png')
+# def Expensecomp_persqft_Plot():
+#     lastyear_name,last_month_Expense,currentyear_name,current_month_Expense = comp_YTM()
+#     print(lastyear_name,last_month_Expense,currentyear_name,current_month_Expense)
+#
+#     x_ax = [str(lastyear_name), str(currentyear_name)]
+#     y_ax = [abs(last_month_Expense), abs(current_month_Expense)]
+#     sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
+#     ax1 = sns.barplot(x=x_ax, y=y_ax, joinstyle='bevel')
+#     ax1.set_ylabel('Amount Operating Expense per sq.ft ', size=15)
+#     ax1.figure.set_size_inches(8, 7.3)
+#
+#     def currency(x, pos):
+#         """The two args are the value and tick position"""
+#         if x >= 1e6:
+#             s = '${:1.1f}M'.format(x * 1e-6)
+#         elif x >= 1e3:
+#             s = '${:1.0f}K'.format(x * 1e-3)
+#         else:
+#             s = '${:1.0f}'.format(x)
+#         return s
+#
+#     def change_width1(ax1, new_value):
+#         for patch in ax1.patches:
+#             current_width = patch.get_width()
+#             diff = current_width - new_value
+#
+#             # we change the bar width
+#             patch.set_width(new_value)
+#
+#             # we recenter the bar
+#             patch.set_x(patch.get_x() + diff * .5)
+#
+#     change_width1(ax1, 0.40)
+#
+#     new_patches1 = []
+#     mut_Aspect = max(current_month_Expense, last_month_Expense)
+#
+#     for patch in reversed(ax1.patches):
+#
+#         bb = patch.get_bbox()
+#         p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
+#                                 abs(bb.width), abs(bb.height),
+#                                 boxstyle="round, pad=0.030,rounding_size = 0.030",
+#                                 ec="none", fc='#728137',
+#                                 mutation_aspect=mut_Aspect
+#                                 )
+#
+#         patch.remove()
+#         new_patches1.append(p_bbox)
+#
+#     for patch in new_patches1:
+#         ax1.add_patch(patch)
+#     print('comparsion', new_patches1)
+#     sns.despine(top=True, right=True)
+#
+#     ax1.tick_params(axis=u'both', which=u'both', length=0)
+#     if abs(current_month_Expense) > 1000000 or abs(last_month_Expense) > 1000000:
+#         for index, value in enumerate(y_ax):
+#             plt.text(index, value // 1.02, '$' + str(round(value / 1000000, 2)) + ' M', fontfamily='Open Sans',
+#                      fontsize=20, ha='center', va='top',
+#                      color='white', weight='bold')
+#     else:
+#         for index, value in enumerate(y_ax):
+#             plt.text(index, value // 1.02, '$' + str(round(value / 1000, 2)) + ' K', fontsize=20, ha='center',
+#                      va='top',
+#                      color='white', weight='bold')
+#     plt.tick_params(labelsize=18)
+#     plt.ticklabel_format(style='plain', axis='y')
+#     plt.rcParams["font.family"] = "Open Sans"
+#     ax1.yaxis.set_major_formatter(currency)
+#     plt.tight_layout()
+#     plt.savefig('YTM_COMPARISON.png')
 
 
 
 if __name__ == "__main__":
-    # top_5plot()
-    Expensecomp_persqft_Plot()
+    top_5plot()
+
 
 
