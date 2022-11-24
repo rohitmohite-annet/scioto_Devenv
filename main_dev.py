@@ -7,6 +7,9 @@ from matplotlib.patches import FancyBboxPatch
 import seaborn as sns
 from datetime import datetime, timedelta,date
 import pandas as pd
+import plotly.graph_objects as go
+import math
+
 
 def fetch_data():
     try:
@@ -114,69 +117,71 @@ def top_5plot():
 
 
 
-    #
-    # x_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['propertyname'].to_list()
-    # y_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['NOI_persq'].to_list()
-    #
-    # sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
-    # ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
-    # ax.figure.set_size_inches(10, 6)
-    # ax.set_ylabel('NOI Amount per sq.ft ', size=15)
-    #
-    #
-    # def currency(x, pos):
-    #     """The two args are the value and tick position"""
-    #     if x >= 1e6:
-    #         s = '${:1.1f}M'.format(x * 1e-6)
-    #     elif x >= 1e3:
-    #         s = '${:1.0f}K'.format(x * 1e-3)
-    #     else:
-    #         s = '${:1.0f}'.format(x)
-    #     return s
-    #
-    # def change_width(ax, new_value):
-    #     for patch in ax.patches:
-    #         current_width = patch.get_width()
-    #         diff = current_width - new_value
-    #
-    #         # we change the bar width
-    #         patch.set_width(new_value)
-    #
-    #         # we recenter the bar
-    #         patch.set_x(patch.get_x() + diff * .5)
-    #
-    # change_width(ax, 0.6)
-    #
-    # new_patches = []
-    # mut_Aspect = max(y_axis)
-    #
-    # for patch in reversed(ax.patches):
-    #     bb = patch.get_bbox()
-    #
-    #     p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
-    #                             abs(bb.width), abs(bb.height),
-    #                             boxstyle="round, pad=0.030,rounding_size = 0.045",
-    #                             ec="none", fc='#728137',
-    #                             mutation_aspect=mut_Aspect
-    #                             )
-    #     patch.remove()
-    #     new_patches.append(p_bbox)
-    #
-    # for patch in new_patches:
-    #     ax.add_patch(patch)
-    #
-    # sns.despine(top=True, right=True)
-    #
-    # ax.tick_params(axis=u'both', which=u'both', length=0)
-    # for index, value in enumerate(y_axis):
-    #     plt.text(index, value // 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
-    #              color='white', weight='bold')
-    #
-    # plt.ticklabel_format(style='plain', axis='y')
-    # plt.rcParams["font.family"] = "Open Sans"
-    # ax.yaxis.set_major_formatter(currency)
-    # plt.tight_layout()
-    # plt.savefig("top5_exp_Persqft.png")
+
+    x_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['propertyname'].to_list()
+    y_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['NOI_persq'].to_list()
+
+    sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
+    ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
+    ax.figure.set_size_inches(10, 6)
+    ax.set_ylabel('NOI Amount per sq.ft ', size=15)
+
+
+    def currency(x, pos):
+        """The two args are the value and tick position"""
+        if x >= 1e6:
+            s = '${:1.1f}M'.format(x * 1e-6)
+        elif x >= 1e3:
+            s = '${:1.0f}K'.format(x * 1e-3)
+        else:
+            s = '${:1.0f}'.format(x)
+        return s
+
+    def change_width(ax, new_value):
+        for patch in ax.patches:
+            current_width = patch.get_width()
+            diff = current_width - new_value
+
+            # we change the bar width
+            patch.set_width(new_value)
+
+            # we recenter the bar
+            patch.set_x(patch.get_x() + diff * .5)
+
+    change_width(ax, 0.6)
+
+    new_patches = []
+    mut_Aspect = max(y_axis)
+
+    for patch in reversed(ax.patches):
+        bb = patch.get_bbox()
+
+        p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
+                                abs(bb.width), abs(bb.height),
+                                boxstyle="round, pad=0.030,rounding_size = 0.045",
+                                ec="none", fc='#728137',
+                                mutation_aspect=mut_Aspect
+                                )
+        patch.remove()
+        new_patches.append(p_bbox)
+
+    for patch in new_patches:
+        ax.add_patch(patch)
+
+    sns.despine(top=True, right=True)
+
+    ax.tick_params(axis=u'both', which=u'both', length=0)
+    for index, value in enumerate(y_axis):
+        plt.text(index, value * 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
+                 color='white', weight='bold')
+
+    plt.ticklabel_format(style='plain', axis='y')
+    plt.rcParams["font.family"] = "Open Sans"
+    ax.yaxis.set_major_formatter(currency)
+    plt.tight_layout()
+    plt.savefig("top5_exp_Persqft.png")
+
+    
 
 # def comp_YTM():
 #     current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
