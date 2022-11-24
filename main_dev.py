@@ -112,7 +112,9 @@ def top_5plot():
     percent_diff = []
     for curre,prev in zip(current_value,last_year_values):
         print(curre,prev)
-        percent_diff.append(((curre - prev) / prev) * 100)
+        pe_df = ((curre - prev) / prev) * 100
+        ok = "{:.2f}".format(pe_df)
+        percent_diff.append(ok)
     print(percent_diff)
 
 
@@ -177,11 +179,57 @@ def top_5plot():
 
     plt.ticklabel_format(style='plain', axis='y')
     plt.rcParams["font.family"] = "Open Sans"
+
+    def add_value_labels(ax, spacing=16):
+
+
+        # For each bar: Place a label
+        for perdif,rect in zip(percent_diff[::-1],ax.patches):
+
+            # Get X and Y placement of label from rect.
+            y_value = rect.get_height()
+            x_value = rect.get_x() + rect.get_width() / 2
+
+            # Number of points between bar and label. Change to your liking.
+            space = spacing
+            # Vertical alignment for positive values
+            va = 'bottom'
+
+            # If value of bar is negative: Place label below bar
+            if y_value < 0:
+                # Invert space to place label below
+                space *= -1
+                # Vertically align label at top
+                va = 'top'
+
+            # Use Y value as label and format number with one decimal place
+            #         label = "{:.1f}".format(y_value)
+            if float(perdif) > 0:
+                label = "\u21E7{}%".format(perdif)
+            elif float(perdif) < 0:
+                jk  = float(perdif)
+                neg_handle = abs(jk)
+                label = "\u21E9{}%".format(neg_handle)
+            else:
+                label = "{}%".format(perdif)
+
+            # Create annotation
+            ax.annotate(
+                label,  # Use `label` as label
+                (x_value, y_value),  # Place label at end of the bar
+                xytext=(0, space),  # Vertically shift label by `space`
+                textcoords="offset points",  # Interpret `xytext` as offset in points
+                ha='center',  # Horizontally center label
+                va=va)  # Vertically align label differently for
+            # positive and negative values.
+
+    # Call the function above. All the magic happens there.
+    add_value_labels(ax)
+
     ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
     plt.savefig("top5_exp_Persqft.png")
 
-    
 
 # def comp_YTM():
 #     current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
