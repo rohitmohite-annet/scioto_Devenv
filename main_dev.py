@@ -103,7 +103,17 @@ def top_5plot():
         value = final_sq_2021[final_sq_2021['propertyname'] == prop]['NOI_persq'].values[0]
         last_year_values.append(value)
 
-    print(last_year_values)
+
+    # ===========percent diff each property=====================
+    current_value = final_sq_2022.sort_values(by=['NOI_persq'], ascending=False)[:5]['NOI_persq'].to_list()
+    percent_diff = []
+    for curre,prev in zip(current_value,last_year_values):
+        print(curre,prev)
+        percent_diff.append(((curre - prev) / prev) * 100)
+    print(percent_diff)
+
+
+
     #
     # x_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['propertyname'].to_list()
     # y_axis = final_sq_2022.sort_values(by=['NOI_persq'],ascending = False)[:5]['NOI_persq'].to_list()
@@ -111,7 +121,7 @@ def top_5plot():
     # sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
     # ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     # ax.figure.set_size_inches(10, 6)
-    # ax.set_ylabel('Amount Operating Expense per sq.ft ', size=15)
+    # ax.set_ylabel('NOI Amount per sq.ft ', size=15)
     #
     #
     # def currency(x, pos):
