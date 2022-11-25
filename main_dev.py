@@ -11,39 +11,38 @@ import plotly.graph_objects as go
 import math
 
 
-def fetch_data():
-    try:
-        server = 'epsql-srv-scioto-4see.database.windows.net'
-        database = 'qasciotodb'
-        username = 'sciotosqladmin'
-        password = 'Ret$nQ2stkl21'
-        cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
-        cursor = cnxn.cursor()
-        data = pd.read_sql("select * from [dbo].[viewIncomeStatement] where Ledger = 'AA' AND PropertyStatus='Active'",cnxn)
-        data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
-        return data
-    except Exception as e:
-            return 'From reading data'+ str(e)
+def sql_connection():
+    server = 'epsql-srv-scioto-4see.database.windows.net'
+    database = 'qasciotodb'
+    username = 'sciotosqladmin'
+    password = 'Ret$nQ2stkl21'
+    cnxn = pyodbc.connect(
+        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    return cnxn
 
-# server = 'epsql-srv-scioto-4see.database.windows.net'
-# database = 'qasciotodb'
-# username = 'sciotosqladmin'
-# password = 'Ret$nQ2stkl21'
-# cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
-# cursor = cnxn.cursor()
-# data = pd.read_sql("select * from [dbo].[viewIncomeStatement] where Ledger = 'AA' AND PropertyStatus='Active'",cnxn)
-# data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
-# sqft = pd.read_sql("select * from [dbo].[viewPropertyUnitLeaseDetails]",cnxn)
+
+connection1 = sql_connection()
+data = pd.read_sql("select * from [dbo].[viewIncomeStatement] where Ledger = 'AA' AND PropertyStatus='Active' AND L3 = 'OPERATING EXPENSES'",connection1)
+data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
+data["FiscalYear"] = pd.to_numeric(data["FiscalYear"])
+connection1.close()
 #
 
-
-
-data = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\viewIncomeStatement.csv')
-data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
-data = data[(data['Ledger'] == 'AA')]
-
-sqft = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\Viewpropertyunitlease.csv',usecols=['PropertyID','Property Description','Unit Square Feet'])
+connection = sql_connection()
+sqft = pd.read_sql("select * from [dbo].[viewPropertyUnitLeaseDetails]",connection)
 sqft.drop_duplicates(subset="PropertyID",inplace=True)
+connection.close()
+
+print(data.shape,sqft.shape)
+
+#
+# ============= Read from Files================
+# data = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\viewIncomeStatement.csv')
+# data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
+# data = data[(data['Ledger'] == 'AA')]
+
+# sqft = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\Viewpropertyunitlease.csv',usecols=['PropertyID','Property Description','Unit Square Feet'])
+# sqft.drop_duplicates(subset="PropertyID",inplace=True)
 
 
 
@@ -103,6 +102,7 @@ def persq_dataframe(merged_sqft):
 def top_5plot():
     data_2022 = join_data(data, sqft, '2022')
     final_sq_2022 = persq_dataframe(data_2022)
+    print(final_sq_2022.head())
 
 
     # ===============Finding persq ft NOI==========================
