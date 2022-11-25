@@ -217,11 +217,11 @@ def top_5plot():
             # Use Y value as label and format number with one decimal place
             #         label = "{:.1f}".format(y_value)
             if float(perdif) > 0:
-                label = "\u21E7{}%".format(perdif)
+                label = "\u21E7 +{}%".format(perdif)
             elif float(perdif) < 0:
                 jk  = float(perdif)
                 neg_handle = abs(jk)
-                label = "\u21E9{}%".format(neg_handle)
+                label = "\u21E9 -{}%".format(neg_handle)
             else:
                 label = "{}%".format(perdif)
 
