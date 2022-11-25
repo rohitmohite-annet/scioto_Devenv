@@ -25,6 +25,18 @@ def fetch_data():
     except Exception as e:
             return 'From reading data'+ str(e)
 
+# server = 'epsql-srv-scioto-4see.database.windows.net'
+# database = 'qasciotodb'
+# username = 'sciotosqladmin'
+# password = 'Ret$nQ2stkl21'
+# cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
+# cursor = cnxn.cursor()
+# data = pd.read_sql("select * from [dbo].[viewIncomeStatement] where Ledger = 'AA' AND PropertyStatus='Active'",cnxn)
+# data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
+# sqft = pd.read_sql("select * from [dbo].[viewPropertyUnitLeaseDetails]",cnxn)
+#
+
+
 
 data = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\viewIncomeStatement.csv')
 data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
@@ -231,26 +243,26 @@ def top_5plot():
     plt.savefig("top5_exp_Persqft.png")
 
 
-# def comp_YTM():
-#     current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
-#     current_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(current_first_date)) &
-#                              (data['NetPostingPeriod'] <= pd.to_datetime(last_day_of_prev_month))]
-#
-#     previous_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(previous_first_date)) &
-#                               (data['NetPostingPeriod'] <= pd.to_datetime(previous_date))]
-#
-#     # =======merge sq ft data========
-#     last_year_data_sq_merge = previous_year_data.merge(sqft, on='PropertyID', how='left')
-#     current_year_data_sq_merge = current_year_data.merge(sqft, on='PropertyID', how='left')
-#
-#
-#     # =======Per sq ft calculation each yaer========
-#     last_year_persq = persq_dataframe(last_year_data_sq_merge)
-#     this_year_persq = persq_dataframe(current_year_data_sq_merge)
-#
-#     last_year_persq_amount = last_year_persq['NOI_persq'].sum()
-#     current_year_persq_amount = this_year_persq['NOI_persq'].sum()
-#     return str(previous_first_date.year) ,last_year_persq_amount,str(current_first_date.year),current_year_persq_amount
+def comp_YTM():
+    current_first_date,last_day_of_prev_month,previous_first_date,previous_date = getdata_range_YTM()
+    current_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(current_first_date)) &
+                             (data['NetPostingPeriod'] <= pd.to_datetime(last_day_of_prev_month))]
+
+    previous_year_data = data[(data['NetPostingPeriod'] >= pd.to_datetime(previous_first_date)) &
+                              (data['NetPostingPeriod'] <= pd.to_datetime(previous_date))]
+
+    # =======merge sq ft data========
+    last_year_data_sq_merge = previous_year_data.merge(sqft, on='PropertyID', how='left')
+    current_year_data_sq_merge = current_year_data.merge(sqft, on='PropertyID', how='left')
+
+
+    # =======Per sq ft calculation each yaer========
+    last_year_persq = persq_dataframe(last_year_data_sq_merge)
+    this_year_persq = persq_dataframe(current_year_data_sq_merge)
+
+    last_year_persq_amount = last_year_persq['NOI_persq'].sum()
+    current_year_persq_amount = this_year_persq['NOI_persq'].sum()
+    return str(previous_first_date.year) ,last_year_persq_amount,str(current_first_date.year),current_year_persq_amount
 
 # def Expensecomp_persqft_Plot():
 #     lastyear_name,last_month_Expense,currentyear_name,current_month_Expense = comp_YTM()
@@ -329,6 +341,7 @@ def top_5plot():
 
 if __name__ == "__main__":
     top_5plot()
-
+    a,b,c,d= comp_YTM()
+    print(a,b,c,d)
 
 
