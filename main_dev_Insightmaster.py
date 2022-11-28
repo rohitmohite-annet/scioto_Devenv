@@ -116,7 +116,7 @@ if __name__=='__main__':
     sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     ax.figure.set_size_inches(10, 6)
-    ax.set_ylabel('NOI Amount per sq.ft '+' ('+str(current_date.year)+')', size=15)
+    ax.set_ylabel('NOI Amount per sq.ft ', size=15)
 
 
     def currency(x, pos):
