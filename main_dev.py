@@ -21,27 +21,28 @@ def sql_connection():
     return cnxn
 
 
-# connection1 = sql_connection()
-# data = pd.read_sql("select * from [dbo].[viewIncomeStatement] where Ledger = 'AA' AND PropertyStatus='Active' AND L3 = 'OPERATING EXPENSES'",connection1)
-# data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
-# data["FiscalYear"] = pd.to_numeric(data["FiscalYear"])
-# connection1.close()
-# #
+connection1 = sql_connection()
+data = pd.read_sql("select * from [dbo].[viewIncomeStatement] where Ledger = 'AA' AND PropertyStatus='Active' AND L3 = 'OPERATING EXPENSES'",connection1)
+data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
+data["FiscalYear"] = pd.to_numeric(data["FiscalYear"])
+connection1.close()
 #
-# connection = sql_connection()
-# sqft = pd.read_sql("select * from [dbo].[viewPropertyUnitLeaseDetails]",connection)
-# sqft.drop_duplicates(subset="PropertyID",inplace=True)
-# connection.close()
+
+connection = sql_connection()
+sqft = pd.read_sql("select * from [dbo].[viewPropertyUnitLeaseDetails]",connection)
+sqft = sqft.loc[sqft['Unit Square Feet'] > 0]
+sqft.drop_duplicates(subset="PropertyID",inplace=True)
+connection.close()
 
 #
 # ============= Read from Files================
-data = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\viewIncomeStatement.csv')
-data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
-data = data[(data['Ledger'] == 'AA')]
-
-sqft = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\Viewpropertyunitlease.csv',usecols=['PropertyID','Property Description','Unit Square Feet'])
-sqft.drop_duplicates(subset="PropertyID",inplace=True)
-
+# data = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\viewIncomeStatement.csv')
+# data['NetPostingPeriod'] = pd.to_datetime(data['NetPostingPeriod'])
+# data = data[(data['Ledger'] == 'AA')]
+#
+# sqft = pd.read_csv('C:\\Rohit_Data\\WORK\\Scioto_Work\\Dev_Environment\\Data\\Viewpropertyunitlease.csv',usecols=['PropertyID','Property Description','Unit Square Feet'])
+# sqft.drop_duplicates(subset="PropertyID",inplace=True)
+#
 
 
 def join_data(data,sqft,year):
