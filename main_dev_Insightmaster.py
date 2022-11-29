@@ -82,140 +82,142 @@ def current_top_5_property():
 
 
 
-
 if __name__=='__main__':
-    year = str(current_date.year)
-    top5properties,top_5_values,current_total_sqft = current_top_5_property()
+    try:
+        year = str(current_date.year)
+        top5properties,top_5_values,current_total_sqft = current_top_5_property()
 
-    # ================last_year====================
-    year = str(current_date.year-1)
-    last_year_data = merge_with_sqft()
-    # last_year_data.to_csv('dfo.csv')
-    datamerged_top5_last_year = last_year_data.loc[last_year_data['propertyname'].isin(top5properties)]
+        # ================last_year====================
+        year = str(current_date.year-1)
+        last_year_data = merge_with_sqft()
+        # last_year_data.to_csv('dfo.csv')
+        datamerged_top5_last_year = last_year_data.loc[last_year_data['propertyname'].isin(top5properties)]
 
-    last_year_values = []
-    for prop in top5properties:
-        value = datamerged_top5_last_year[datamerged_top5_last_year['propertyname'] == prop]['NOI_Persqft'].values[0]
-        last_year_values.append(value)
-
-
-    # ===========percent diff each property=====================
-    percent_diff = []
-    for curre,prev in zip(top_5_values,last_year_values):
-        print(curre,prev)
-        pe_df = ((curre - prev) / prev) * 100
-        ok = "{:.2f}".format(pe_df)
-        percent_diff.append(ok)
-    print(percent_diff)
+        last_year_values = []
+        for prop in top5properties:
+            value = datamerged_top5_last_year[datamerged_top5_last_year['propertyname'] == prop]['NOI_Persqft'].values[0]
+            last_year_values.append(value)
 
 
-    # ==============PLOT=====================
-    x_axis = top5properties
-    y_axis = top_5_values
+        # ===========percent diff each property=====================
+        percent_diff = []
+        for curre,prev in zip(top_5_values,last_year_values):
+            print(curre,prev)
+            pe_df = ((curre - prev) / prev) * 100
+            ok = "{:.2f}".format(pe_df)
+            percent_diff.append(ok)
+        print(percent_diff)
 
-    sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
-    ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
-    ax.figure.set_size_inches(10, 6)
-    ax.set_ylabel('NOI Amount per sq.ft ', size=15)
+
+        # ==============PLOT=====================
+        x_axis = top5properties
+        y_axis = top_5_values
+
+        sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
+        ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
+        ax.figure.set_size_inches(10, 6)
+        ax.set_ylabel('NOI Amount per sq.ft ', size=15)
 
 
-    def currency(x, pos):
-        """The two args are the value and tick position"""
-        if x >= 1e6:
-            s = '${:1.1f}M'.format(x * 1e-6)
-        elif x >= 1e3:
-            s = '${:1.0f}K'.format(x * 1e-3)
-        else:
-            s = '${:1.0f}'.format(x)
-        return s
-
-    def change_width(ax, new_value):
-        for patch in ax.patches:
-            current_width = patch.get_width()
-            diff = current_width - new_value
-
-            # we change the bar width
-            patch.set_width(new_value)
-
-            # we recenter the bar
-            patch.set_x(patch.get_x() + diff * .5)
-
-    change_width(ax, 0.6)
-
-    new_patches = []
-    mut_Aspect = max(y_axis)
-
-    for patch in reversed(ax.patches):
-        bb = patch.get_bbox()
-
-        p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
-                                abs(bb.width), abs(bb.height),
-                                boxstyle="round, pad=0.030,rounding_size = 0.045",
-                                ec="none", fc='#728137',
-                                mutation_aspect=mut_Aspect
-                                )
-        patch.remove()
-        new_patches.append(p_bbox)
-
-    for patch in new_patches:
-        ax.add_patch(patch)
-
-    sns.despine(top=True, right=True)
-
-    ax.tick_params(axis=u'both', which=u'both', length=0)
-    for index, value in enumerate(y_axis):
-        plt.text(index, value * 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
-                 color='white', weight='bold')
-
-    plt.ticklabel_format(style='plain', axis='y')
-    plt.rcParams["font.family"] = "Open Sans"
-
-    def add_value_labels(ax, spacing=16):
-        # For each bar: Place a label
-        for perdif,rect in zip(percent_diff[::-1],ax.patches):
-
-            # Get X and Y placement of label from rect.
-            y_value = rect.get_height()
-            x_value = rect.get_x() + rect.get_width() / 2
-
-            # Number of points between bar and label. Change to your liking.
-            space = spacing
-            # Vertical alignment for positive values
-            va = 'bottom'
-
-            # If value of bar is negative: Place label below bar
-            if y_value < 0:
-                # Invert space to place label below
-                space *= -1
-                # Vertically align label at top
-                va = 'top'
-
-            # Use Y value as label and format number with one decimal place
-            #         label = "{:.1f}".format(y_value)
-            if float(perdif) > 0:
-                label = "\u21E7 +{}%".format(perdif)
-            elif float(perdif) < 0:
-                jk  = float(perdif)
-                neg_handle = abs(jk)
-                label = "\u21E9 -{}%".format(neg_handle)
+        def currency(x, pos):
+            """The two args are the value and tick position"""
+            if x >= 1e6:
+                s = '${:1.1f}M'.format(x * 1e-6)
+            elif x >= 1e3:
+                s = '${:1.0f}K'.format(x * 1e-3)
             else:
-                label = "{}%".format(perdif)
+                s = '${:1.0f}'.format(x)
+            return s
 
-            # Create annotation
-            ax.annotate(
-                label,  # Use `label` as label
-                (x_value, y_value),  # Place label at end of the bar
-                xytext=(0, space),  # Vertically shift label by `space`
-                textcoords="offset points",  # Interpret `xytext` as offset in points
-                ha='center',  # Horizontally center label
-                va=va)  # Vertically align label differently for
-            # positive and negative values.
+        def change_width(ax, new_value):
+            for patch in ax.patches:
+                current_width = patch.get_width()
+                diff = current_width - new_value
 
-    # Call the function above. All the magic happens there.
-    add_value_labels(ax)
-    ax.grid(False)
-    ax.yaxis.set_major_formatter(currency)
-    plt.tight_layout()
-    plt.savefig('latest.png')
+                # we change the bar width
+                patch.set_width(new_value)
+
+                # we recenter the bar
+                patch.set_x(patch.get_x() + diff * .5)
+
+        change_width(ax, 0.6)
+
+        new_patches = []
+        mut_Aspect = max(y_axis)
+
+        for patch in reversed(ax.patches):
+            bb = patch.get_bbox()
+
+            p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
+                                    abs(bb.width), abs(bb.height),
+                                    boxstyle="round, pad=0.030,rounding_size = 0.045",
+                                    ec="none", fc='#728137',
+                                    mutation_aspect=mut_Aspect
+                                    )
+            patch.remove()
+            new_patches.append(p_bbox)
+
+        for patch in new_patches:
+            ax.add_patch(patch)
+
+        sns.despine(top=True, right=True)
+
+        ax.tick_params(axis=u'both', which=u'both', length=0)
+        for index, value in enumerate(y_axis):
+            plt.text(index, value * 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
+                     color='white', weight='bold')
+
+        plt.ticklabel_format(style='plain', axis='y')
+        plt.rcParams["font.family"] = "Open Sans"
+
+        def add_value_labels(ax, spacing=16):
+            # For each bar: Place a label
+            for perdif,rect in zip(percent_diff[::-1],ax.patches):
+
+                # Get X and Y placement of label from rect.
+                y_value = rect.get_height()
+                x_value = rect.get_x() + rect.get_width() / 2
+
+                # Number of points between bar and label. Change to your liking.
+                space = spacing
+                # Vertical alignment for positive values
+                va = 'bottom'
+
+                # If value of bar is negative: Place label below bar
+                if y_value < 0:
+                    # Invert space to place label below
+                    space *= -1
+                    # Vertically align label at top
+                    va = 'top'
+
+                # Use Y value as label and format number with one decimal place
+                #         label = "{:.1f}".format(y_value)
+                if float(perdif) > 0:
+                    label = "\u21E7 +{}%".format(perdif)
+                elif float(perdif) < 0:
+                    jk  = float(perdif)
+                    neg_handle = abs(jk)
+                    label = "\u21E9 -{}%".format(neg_handle)
+                else:
+                    label = "{}%".format(perdif)
+
+                # Create annotation
+                ax.annotate(
+                    label,  # Use `label` as label
+                    (x_value, y_value),  # Place label at end of the bar
+                    xytext=(0, space),  # Vertically shift label by `space`
+                    textcoords="offset points",  # Interpret `xytext` as offset in points
+                    ha='center',  # Horizontally center label
+                    va=va)  # Vertically align label differently for
+                # positive and negative values.
+
+        # Call the function above. All the magic happens there.
+        add_value_labels(ax)
+        ax.grid(False)
+        ax.yaxis.set_major_formatter(currency)
+        plt.tight_layout()
+        plt.savefig('latest.png')
+    except Exception as e:
+        print(e)
 
 
