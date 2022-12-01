@@ -82,7 +82,7 @@ def current_top_5_property():
 
 def PLOT(xaxis_,y_axis,percent_diff):
 
-    sns.set(rc={'axes.facecolor': '#EDF3D5', 'figure.facecolor': '#EDF3D5'})
+    sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     ax.figure.set_size_inches(10, 6)
     ax.set_ylabel('NOI Amount per sq.ft ', size=15)
@@ -184,7 +184,7 @@ def PLOT(xaxis_,y_axis,percent_diff):
     ax.grid(False)
     ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
-    plt.savefig('latest.png')
+    plt.savefig('latest_2.png')
 
 
 if __name__=='__main__':
@@ -195,7 +195,6 @@ if __name__=='__main__':
         # ================last_year====================
         year = str(current_date.year-1)
         last_year_data = merge_with_sqft()
-        # last_year_data.to_csv('dfo.csv')
         datamerged_top5_last_year = last_year_data.loc[last_year_data['propertyname'].isin(top5properties)]
 
         last_year_values = []
