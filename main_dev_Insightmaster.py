@@ -8,7 +8,7 @@ from datetime import datetime, timedelta,date
 import pandas as pd
 import plotly.graph_objects as go
 import math
-
+from emails_tosend import *
 
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'
@@ -182,7 +182,7 @@ def PLOT(xaxis_,y_axis,percent_diff):
 
     # Call the function above. All the magic happens there.
     add_value_labels(ax)
-    ax.grid(False)
+
     ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
     plt.savefig('latest_4.png')
@@ -203,7 +203,9 @@ if __name__=='__main__':
             value = datamerged_top5_last_year[datamerged_top5_last_year['propertyname'] == prop]['NOI_Persqft'].values[0]
             last_year_values.append(value)
 
-
+    except Exception as e:
+        sql_conn_fail()
+    try:
         # ===========percent diff each property=====================
         percent_diff = []
         for curre,prev in zip(top_5_values,last_year_values):
@@ -221,8 +223,9 @@ if __name__=='__main__':
         print('last year values',last_year_values)
         print('percent diff',percent_diff)
         PLOT(x_axis,y_axis,percent_diff)
-
+        a = success_ran()
+        print(a)
     except Exception as e:
-        print(e)
+        cron_fail()
 
 
