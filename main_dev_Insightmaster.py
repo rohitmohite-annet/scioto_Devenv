@@ -8,7 +8,7 @@ from datetime import datetime, timedelta,date
 import pandas as pd
 import plotly.graph_objects as go
 import math
-from emails_tosend import *
+from emailto_send import *
 
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'

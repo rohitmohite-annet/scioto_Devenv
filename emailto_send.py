@@ -72,5 +72,3 @@ def cron_fail():
     return response
 
 
-
-
