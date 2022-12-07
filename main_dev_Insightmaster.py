@@ -59,6 +59,7 @@ def calcluate(year):
         towrite = {'Index' : ind ,'Company Number' : AttributeCode,'propertyname': i,'KPI' : KPI,'Type' :Type ,'YEAR':year ,'NOI_amount': NOI_sum}
         dataframe_to_write = pd.DataFrame([towrite], columns=towrite.keys())
         Final_dataframe = Final_dataframe.append(dataframe_to_write, ignore_index=True)
+        Final_dataframe.to_csv('Final_data.csv')
     return Final_dataframe
 
 def merge_with_sqft():
@@ -76,7 +77,6 @@ def current_top_5_property():
     current_total_sqft = current_year_data['NOI_Persqft'].sum()
     top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['propertyname'].to_list()
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['NOI_Persqft'].to_list()
-    print(top5properties,top_5_values,current_total_sqft)
     return top5properties,top_5_values,current_total_sqft
 
 
@@ -119,7 +119,7 @@ def PLOT(xaxis_,y_axis,percent_diff):
         p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
                                 abs(bb.width), abs(bb.height),
                                 boxstyle="round, pad=0.030,rounding_size = 0.045",
-                                ec="none", fc='#728137',
+                                ec="none", fc='#4298af',
                                 mutation_aspect=mut_Aspect
                                 )
         patch.remove()
@@ -131,6 +131,7 @@ def PLOT(xaxis_,y_axis,percent_diff):
     sns.despine(top=True, right=True)
 
     ax.tick_params(axis=u'both', which=u'both', length=0)
+    plt.tick_params(labelsize=14.5)
     for index, value in enumerate(y_axis):
         plt.text(index, value * 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
                  color='white', weight='bold')
@@ -184,7 +185,7 @@ def PLOT(xaxis_,y_axis,percent_diff):
     ax.grid(False)
     ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
-    plt.savefig('latest_2.png')
+    plt.savefig('latest_4.png')
 
 
 if __name__=='__main__':
@@ -206,16 +207,19 @@ if __name__=='__main__':
         # ===========percent diff each property=====================
         percent_diff = []
         for curre,prev in zip(top_5_values,last_year_values):
-            print(curre,prev)
+
             pe_df = ((curre - prev) / prev) * 100
             ok = "{:.2f}".format(pe_df)
             percent_diff.append(ok)
-        print(percent_diff)
 
 
         # ==============PLOT=====================
         x_axis = top5properties
         y_axis = top_5_values
+        print('Property Name',top5properties)
+        print('current year values',top_5_values)
+        print('last year values',last_year_values)
+        print('percent diff',percent_diff)
         PLOT(x_axis,y_axis,percent_diff)
 
     except Exception as e:

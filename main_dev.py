@@ -1,14 +1,12 @@
 import pyodbc
 import matplotlib.pyplot as plt
-from pandas.tseries.offsets import DateOffset
 import warnings
 warnings.filterwarnings("ignore")
 from matplotlib.patches import FancyBboxPatch
 import seaborn as sns
 from datetime import datetime, timedelta,date
 import pandas as pd
-import plotly.graph_objects as go
-import math
+
 
 
 def sql_connection():
