@@ -20,13 +20,10 @@ def sql_connection():
     return cnxn
 
 connection = sql_connection()
-sqft = pd.read_sql("select [PropertyID],[PropertyPKID],[Company Number],[Company Description],[Property Status],[Property Type],[Unit Square Feet] from [dbo].[viewPropertyUnitLeaseDetails]",connection)
+sqft = pd.read_sql("select [PropertyID],[PropertyManager],[PropertyPKID],[Company Number],[Company Description],[Property Status],[Property Type],[Unit Square Feet] from [dbo].[viewPropertyUnitLeaseDetails]",connection)
 sqft = sqft.loc[sqft['Unit Square Feet'] > 0]
 sqft.drop_duplicates(subset="PropertyID",inplace=True)
 connection.close()
-
-
-
 
 
 months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -70,8 +67,6 @@ def merge_with_sqft():
     return merged_sqft
 
 
-
-
 def current_top_5_property():
     current_year_data = merge_with_sqft()
     current_total_sqft = current_year_data['NOI_Persqft'].sum()
@@ -80,8 +75,7 @@ def current_top_5_property():
     return top5properties,top_5_values,current_total_sqft
 
 
-def PLOT(xaxis_,y_axis,percent_diff):
-
+def PLOT(x_axis,y_axis,percent_diff):
     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     ax.figure.set_size_inches(10, 6)
@@ -182,8 +176,9 @@ def PLOT(xaxis_,y_axis,percent_diff):
 
     # Call the function above. All the magic happens there.
     add_value_labels(ax)
-
     ax.yaxis.set_major_formatter(currency)
+    ax.spines['left'].set_color('black')
+    ax.spines['bottom'].set_color('black')
     plt.tight_layout()
     plt.savefig('latest_4.png')
 
@@ -204,6 +199,7 @@ if __name__=='__main__':
             last_year_values.append(value)
 
     except Exception as e:
+        print(e)
         sql_conn_fail()
     try:
         # ===========percent diff each property=====================
@@ -226,6 +222,7 @@ if __name__=='__main__':
         a = success_ran()
         print(a)
     except Exception as e:
+        print(e)
         cron_fail()
 
 
