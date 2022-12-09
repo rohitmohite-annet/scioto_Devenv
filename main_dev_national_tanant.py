@@ -6,8 +6,7 @@ from matplotlib.patches import FancyBboxPatch
 import seaborn as sns
 from datetime import datetime, timedelta,date
 import pandas as pd
-import plotly.graph_objects as go
-import math
+
 from emailto_send import *
 
 def sql_connection():
@@ -23,7 +22,6 @@ def persqft_data():
     connection = sql_connection()
     sqft = pd.read_sql("select [PropertyID],[PropertyManager],[PropertyPKID],[Company Description],[Property Status],[Property Type],[Unit Square Feet] from [dbo].[viewPropertyUnitLeaseDetails] where PropertyManager <> '' ",connection)
     connection.close()
-    sqft = sqft.loc[sqft['Unit Square Feet'] > 0]
     sqft.drop_duplicates(subset="PropertyID", inplace=True)
 
     Sqft_data = pd.DataFrame()
@@ -33,6 +31,7 @@ def persqft_data():
         write_to_data = {'National_tenant': Promanage, 'Unit Square Feet': sqft_sum}
         dataframe_to_write = pd.DataFrame([write_to_data], columns=write_to_data.keys())
         Sqft_data = Sqft_data.append(dataframe_to_write, ignore_index=True)
+    Sqft_data = Sqft_data.loc[Sqft_data['Unit Square Feet'] > 0]
     return Sqft_data
 
 
@@ -66,7 +65,6 @@ def calcluate(year):
         towrite = {'Index' : ind ,'National_tenant': i,'KPI' : KPI,'Type' :Type ,'YEAR':year ,'NOI_amount': NOI_sum}
         dataframe_to_write = pd.DataFrame([towrite], columns=towrite.keys())
         Final_dataframe = Final_dataframe.append(dataframe_to_write, ignore_index=True)
-    Final_dataframe.to_csv('Final_data.csv')
     return Final_dataframe
 
 def merge_with_sqft():
@@ -74,16 +72,16 @@ def merge_with_sqft():
     sqft = persqft_data()
     merged_sqft = check.merge(sqft, on='National_tenant', how='left')
     merged_sqft['NOI_Persqft'] = round((merged_sqft['NOI_amount']/merged_sqft['Unit Square Feet']),2)
+    merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','Type','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
     return merged_sqft
 
 
 def current_top_5_property():
     current_year_data = merge_with_sqft()
-    current_total_sqft = current_year_data['NOI_Persqft'].sum()
-    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['propertyname'].to_list()
+    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['National_tenant'].to_list()
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['NOI_Persqft'].to_list()
-    return top5properties,top_5_values,current_total_sqft
+    return top5properties,top_5_values
 
 
 def PLOT(x_axis,y_axis,percent_diff):
@@ -191,22 +189,22 @@ def PLOT(x_axis,y_axis,percent_diff):
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('black')
     plt.tight_layout()
-    plt.savefig('latest_4.png')
+    plt.savefig('latest_5.png')
 
 
 if __name__=='__main__':
     try:
         year = str(current_date.year)
-        top5properties,top_5_values,current_total_sqft = current_top_5_property()
+        top5properties,top_5_values = current_top_5_property()
 
         # ================last_year====================
         year = str(current_date.year-1)
         last_year_data = merge_with_sqft()
-        datamerged_top5_last_year = last_year_data.loc[last_year_data['propertyname'].isin(top5properties)]
+        datamerged_top5_last_year = last_year_data.loc[last_year_data['National_tenant'].isin(top5properties)]
 
         last_year_values = []
         for prop in top5properties:
-            value = datamerged_top5_last_year[datamerged_top5_last_year['propertyname'] == prop]['NOI_Persqft'].values[0]
+            value = datamerged_top5_last_year[datamerged_top5_last_year['National_tenant'] == prop]['NOI_Persqft'].values[0]
             last_year_values.append(value)
 
     except Exception as e:
