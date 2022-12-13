@@ -201,6 +201,20 @@ def PLOT(x_axis,y_axis,percent_diff):
     graph = my_base64_jpgData.decode("utf-8")
     return graph
 
+
+def create_html_template(graph):
+    insight_title = 'NET OPERATING INCOME'
+    insight_message = 'Top 5 Properties: Operating Income NOI Per Sqft'
+    insight_graph = graph
+    connection = sql_connection()
+    data = pd.read_sql("select [Body] from [dbo].[EmailTemplateMasterInsights] where TemplateId = 4", connection)
+    connection.close()
+    Html_Template = data.Body[0]
+    final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
+                                 insight_graph=insight_graph)
+    return final
+
+
 if __name__=='__main__':
     try:
         year = str(current_date.year)
@@ -237,13 +251,9 @@ if __name__=='__main__':
         print('last year values',last_year_values)
         print('percent diff',percent_diff)
         graph = PLOT(x_axis,y_axis,percent_diff)
+        final = create_html_template(graph)
 
-        insight_title = 'NET OPERATING INCOME'
-        insight_message = 'Top 5 Properties: Operating Income NOI Per Sqft'
 
-        insight_graph = graph
-        insight_details_link = 'https://qascioto4seeapp.azurewebsites.net/home'
-        final = htmlfile(insight_title,insight_message,insight_graph,insight_details_link)
 
         serverId = 36101
         injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
@@ -256,9 +266,9 @@ if __name__=='__main__':
             # message.add_cc_email_address("siddhi.utekar@annet.com")
             # message.add_cc_email_address("nilesh.thote@annet.com")
             client = SocketLabsClient(serverId, injectionApiKey)
-            # response = client.send(message)
+            response = client.send(message)
 
-            # print(json.dumps(response.to_json(), indent=2))
+            print(json.dumps(response.to_json(), indent=2))
         except Exception as e:
             print(e)
             # a = success_ran()
