@@ -137,8 +137,8 @@ def PLOT(x_axis,y_axis,percent_diff):
 
     sns.despine(top=True, right=True)
 
-    ax.tick_params(axis=u'both', which=u'both', length=0)
-    plt.tick_params(labelsize=14.5)
+    ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
+    plt.tick_params(labelsize=14.5,pad=6)
     for index, value in enumerate(y_axis):
         plt.text(index, value * 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
                  color='white', weight='bold')
@@ -193,6 +193,7 @@ def PLOT(x_axis,y_axis,percent_diff):
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('black')
     plt.tight_layout()
+
     # plt.savefig('latest_5.png')
     image_stream = BytesIO()
     plt.savefig(image_stream)
@@ -207,7 +208,7 @@ def create_html_template(graph):
     insight_message = 'Top 5 Properties: Operating Income NOI Per Sqft'
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select [Body] from [dbo].[EmailTemplateMasterInsights] where TemplateId = 4", connection)
+    data = pd.read_sql("select [Body] from [dbo].[EmailTemplateMasterInsights] where TemplateId = 1", connection)
     connection.close()
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
@@ -259,7 +260,7 @@ if __name__=='__main__':
         injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
         try:
             message = BasicMessage()
-            message.subject='TEST'
+            message.subject='Insight: National Tenants with Highest Operating Income'
             message.html_body = str(final)
             message.from_email_address = EmailAddress("rohit.mohite@annet.com")
             message.add_to_email_address("rohit.mohite@annet.com")
