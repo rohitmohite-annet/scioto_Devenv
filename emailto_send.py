@@ -105,6 +105,11 @@ def htmlfile(insight_title,insight_message,insight_graph,insight_details_link):
                 </div>
                 <div style="font-family: Arial Narrow, Helvetica, sans-serif; text-align:center; margin-top:15px;"><img align="center" alt="graph" height="347" src="data:image/png;base64,{insight_graph}" width="484"/></div>
                 <div class="alignment" align="center"><a href="{insight_details_link}" target="_blank" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:#96ae47;border-radius:40px;width:auto;padding-top:5px;padding-bottom:5px; margin-bottom:35px; font-family:Arial Narrow, Helvetica, sans-serif; font-weight:600; text-align:center; margin-top:16px;"><span style="padding-left:25px;padding-right:25px;font-size:15px;display:inline-block;"><span dir="ltr" style="word-break: break-word;"><span style="line-height: 20px; padding-left:15px; padding-right:15px;">DETAILS</span></span></span></a>
+                <p style="    color: darkgray;
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 37px;
+">Note: Upward/Downward arrow indicates percentage increase/decrease compared to last year</p>
             </div>
             </td>
             <td width="76"></td>

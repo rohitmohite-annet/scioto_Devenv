@@ -240,7 +240,7 @@ if __name__=='__main__':
 
         insight_title = 'NET OPERATING INCOME'
         insight_message = 'Top 5 Properties: Operating Income NOI Per Sqft'
-        print(graph)
+
         insight_graph = graph
         insight_details_link = 'https://qascioto4seeapp.azurewebsites.net/home'
         final = htmlfile(insight_title,insight_message,insight_graph,insight_details_link)
@@ -256,7 +256,7 @@ if __name__=='__main__':
             # message.add_cc_email_address("siddhi.utekar@annet.com")
             # message.add_cc_email_address("nilesh.thote@annet.com")
             client = SocketLabsClient(serverId, injectionApiKey)
-            response = client.send(message)
+            # response = client.send(message)
 
             # print(json.dumps(response.to_json(), indent=2))
         except Exception as e:
