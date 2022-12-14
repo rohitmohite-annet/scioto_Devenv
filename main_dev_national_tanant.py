@@ -1,4 +1,3 @@
-import pyodbc
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
@@ -9,7 +8,6 @@ import pandas as pd
 import base64
 from io import BytesIO
 from emailto_send import *
-import sqlalchemy
 import pyodbc
 from sqlalchemy import create_engine
 import urllib
@@ -113,7 +111,7 @@ def PLOT(x_axis,y_axis,percent_diff):
     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     ax.figure.set_size_inches(10, 6)
-    ax.set_ylabel('NOI Amount per sq.ft ', size=19)
+    ax.set_ylabel('NOI Amount per sq.ft ', size=23,weight='bold')
 
     def currency(x, pos):
         """The two args are the value and tick position"""
@@ -205,6 +203,7 @@ def PLOT(x_axis,y_axis,percent_diff):
                 xytext=(0, space),  # Vertically shift label by `space`
                 textcoords="offset points",  # Interpret `xytext` as offset in points
                 fontsize = 17,
+                weight='bold',
                 ha='center',  # Horizontally center label
                 va=va)  # Vertically align label differently for
             # positive and negative values.
@@ -214,6 +213,7 @@ def PLOT(x_axis,y_axis,percent_diff):
     ax.yaxis.set_major_formatter(currency)
     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
         label.set_fontsize(17)
+        label.set_fontweight('bold')
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('black')
     plt.tight_layout()
@@ -307,14 +307,11 @@ if __name__=='__main__':
             # message.add_cc_email_address("nilesh.thote@annet.com")
             client = SocketLabsClient(serverId, injectionApiKey)
             response = client.send(message)
-
+            # success_ran()
             print(json.dumps(response.to_json(), indent=2))
         except Exception as e:
             print(e)
-            # a = success_ran()
-
-
-        # print(a)
+            cron_fail()
     except Exception as e:
         print(e)
         cron_fail()
