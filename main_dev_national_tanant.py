@@ -9,6 +9,11 @@ import pandas as pd
 import base64
 from io import BytesIO
 from emailto_send import *
+import sqlalchemy
+import pyodbc
+from sqlalchemy import create_engine
+import urllib
+
 import json
 from socketlabs.injectionapi import SocketLabsClient
 from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress
@@ -21,6 +26,22 @@ def sql_connection():
     cnxn = pyodbc.connect(
         'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     return cnxn
+
+
+def towritesql():
+    server = 'epsql-srv-scioto-4see.database.windows.net'
+    database = 'qasciotodb'
+    username = 'sciotosqladmin'
+    password = 'Ret$nQ2stkl21'
+
+    quoted = urllib.parse.quote_plus(
+        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
+    return engine
+
+
+
+
 
 def persqft_data():
     connection = sql_connection()
@@ -211,12 +232,12 @@ def create_html_template(graph):
     insight_message = 'Top 5 Properties: Operating Income NOI Per Sqft'
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select [Body] from [dbo].[EmailTemplateMasterInsights] where TemplateId = 3", connection)
+    data = pd.read_sql("select * from [dbo].[EmailTemplateMasterInsights] where TemplateId = 3", connection)
     connection.close()
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
                                  insight_graph=insight_graph)
-    return final
+    return final,data
 
 
 if __name__=='__main__':
@@ -255,19 +276,33 @@ if __name__=='__main__':
         print('last year values',last_year_values)
         print('percent diff',percent_diff)
         graph = PLOT(x_axis,y_axis,percent_diff)
-        final = create_html_template(graph)
-        print(final)
+        final,data_template = create_html_template(graph)
 
 
+# =====================write the DataFrame to a table in the sql database
+        data_to_write_Email={
+        'TemplateId' : data_template.TemplateId[0],
+        'EmailTOAddress' : data_template.EmailTOAddress[0],
+        'EmailCCAddress' : data_template.EmailCCAddress[0],
+        'Subject' : data_template.Subject[0],
+        'Body' : str(final),
+        'IsRead':''}
+        writeto_database = pd.DataFrame([data_to_write_Email], columns=data_to_write_Email.keys())
 
+        engine = towritesql()
+
+        # writeto_database.to_sql('EmailHistoryInsights', schema='dbo', con=engine, if_exists='append', index=False)
+
+
+# ===========================Send mail=============================
         serverId = 36101
         injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
         try:
             message = BasicMessage()
-            message.subject='Insight: National Tenants with Highest Operating Income'
+            message.subject=writeto_database.Subject[0]
             message.html_body = str(final)
             message.from_email_address = EmailAddress("rohit.mohite@annet.com")
-            message.add_to_email_address("rohit.mohite@annet.com")
+            message.add_to_email_address(writeto_database.EmailTOAddress[0])
             # message.add_cc_email_address("siddhi.utekar@annet.com")
             # message.add_cc_email_address("nilesh.thote@annet.com")
             client = SocketLabsClient(serverId, injectionApiKey)
