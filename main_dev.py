@@ -184,7 +184,7 @@ def top_5plot():
 
     ax.tick_params(axis=u'both', which=u'both', length=0)
     for index, value in enumerate(y_axis):
-        plt.text(index, value * 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
+        plt.text(index, value * 1.02, '$' + str(value), fontsize=17, ha='center', va='top',
                  color='white', weight='bold')
 
     plt.ticklabel_format(style='plain', axis='y')
@@ -229,13 +229,15 @@ def top_5plot():
                 (x_value, y_value),  # Place label at end of the bar
                 xytext=(0, space),  # Vertically shift label by `space`
                 textcoords="offset points",  # Interpret `xytext` as offset in points
+                fontsize = 17,
                 ha='center',  # Horizontally center label
                 va=va)  # Vertically align label differently for
             # positive and negative values.
 
     # Call the function above. All the magic happens there.
     add_value_labels(ax)
-
+    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+        label.set_fontsize(17)
     ax.yaxis.set_major_formatter(currency)
     plt.tight_layout()
     plt.savefig("top5_exp_Persqft.png")

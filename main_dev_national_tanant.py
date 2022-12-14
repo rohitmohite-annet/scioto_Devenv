@@ -92,7 +92,7 @@ def PLOT(x_axis,y_axis,percent_diff):
     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     ax.figure.set_size_inches(10, 6)
-    ax.set_ylabel('NOI Amount per sq.ft ', size=15)
+    ax.set_ylabel('NOI Amount per sq.ft ', size=19)
 
     def currency(x, pos):
         """The two args are the value and tick position"""
@@ -140,7 +140,7 @@ def PLOT(x_axis,y_axis,percent_diff):
     ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
     plt.tick_params(labelsize=14.5,pad=6)
     for index, value in enumerate(y_axis):
-        plt.text(index, value * 1.02, '$' + str(value), fontsize=15, ha='center', va='top',
+        plt.text(index, value * 1.02, '$' + str(value), fontsize=17, ha='center', va='top',
                  color='white', weight='bold')
 
     plt.ticklabel_format(style='plain', axis='y')
@@ -183,6 +183,7 @@ def PLOT(x_axis,y_axis,percent_diff):
                 (x_value, y_value),  # Place label at end of the bar
                 xytext=(0, space),  # Vertically shift label by `space`
                 textcoords="offset points",  # Interpret `xytext` as offset in points
+                fontsize = 17,
                 ha='center',  # Horizontally center label
                 va=va)  # Vertically align label differently for
             # positive and negative values.
@@ -190,6 +191,8 @@ def PLOT(x_axis,y_axis,percent_diff):
     # Call the function above. All the magic happens there.
     add_value_labels(ax)
     ax.yaxis.set_major_formatter(currency)
+    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+        label.set_fontsize(17)
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('black')
     plt.tight_layout()
@@ -208,7 +211,7 @@ def create_html_template(graph):
     insight_message = 'Top 5 Properties: Operating Income NOI Per Sqft'
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select [Body] from [dbo].[EmailTemplateMasterInsights] where TemplateId = 1", connection)
+    data = pd.read_sql("select [Body] from [dbo].[EmailTemplateMasterInsights] where TemplateId = 3", connection)
     connection.close()
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
@@ -253,6 +256,7 @@ if __name__=='__main__':
         print('percent diff',percent_diff)
         graph = PLOT(x_axis,y_axis,percent_diff)
         final = create_html_template(graph)
+        print(final)
 
 
 
