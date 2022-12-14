@@ -39,8 +39,6 @@ def towritesql():
 
 
 
-
-
 def persqft_data():
     connection = sql_connection()
     sqft = pd.read_sql("select [PropertyID],[PropertyManager],[PropertyPKID],[Company Description],[Property Status],[Property Type],[Unit Square Feet] from [dbo].[viewPropertyUnitLeaseDetails] where PropertyManager <> '' ",connection)
@@ -229,7 +227,7 @@ def PLOT(x_axis,y_axis,percent_diff):
 
 def create_html_template(graph):
     insight_title = 'NET OPERATING INCOME'
-    insight_message = 'Top 5 Properties: Operating Income NOI Per Sqft'
+    insight_message = 'Top 5 National Tenants: Operating Income NOI Per Sq.ft'
     insight_graph = graph
     connection = sql_connection()
     data = pd.read_sql("select * from [dbo].[EmailTemplateMasterInsights] where TemplateId = 3", connection)
