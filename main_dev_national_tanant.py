@@ -14,7 +14,7 @@ import urllib
 
 import json
 from socketlabs.injectionapi import SocketLabsClient
-from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress
+from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress,BulkRecipient,BulkMessage
 
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'
@@ -300,13 +300,15 @@ if __name__=='__main__':
             message.subject=writeto_database.Subject[0]
             message.html_body = str(final)
             message.from_email_address = EmailAddress("rohit.mohite@annet.com")
-            message.add_to_email_address(writeto_database.EmailTOAddress[0])
-            # message.add_cc_email_address("siddhi.utekar@annet.com")
-            # message.add_cc_email_address("nilesh.thote@annet.com")
+            for to_item in writeto_database.EmailTOAddress[0].split(','):
+                message.add_to_email_address(to_item)
+
+            for cc_item in writeto_database.EmailCCAddress[0].split(','):
+                message.add_cc_email_address(cc_item)
             client = SocketLabsClient(serverId, injectionApiKey)
-            response = client.send(message)
-            # success_ran()
-            print(json.dumps(response.to_json(), indent=2))
+            # response = client.send(message)
+            # # success_ran()
+            # print(json.dumps(response.to_json(), indent=2))
         except Exception as e:
             print(e)
             cron_fail()
