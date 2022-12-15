@@ -22,7 +22,7 @@ def sql_connection():
     username = 'sciotosqladmin'
     password = 'Ret$nQ2stkl21'
     cnxn = pyodbc.connect(
-        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+        'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     return cnxn
 
 
@@ -33,7 +33,7 @@ def towritesql():
     password = 'Ret$nQ2stkl21'
 
     quoted = urllib.parse.quote_plus(
-        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+        'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
     return engine
 
