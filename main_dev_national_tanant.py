@@ -109,7 +109,7 @@ def PLOT(x_axis,y_axis,percent_diff):
     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
     ax.figure.set_size_inches(10, 6)
-    ax.set_ylabel('NOI Amount per sq.ft ', size=23,weight='bold')
+    # ax.set_ylabel('NOI Amount per sq.ft ', size=23,weight='bold')
 
     def currency(x, pos):
         """The two args are the value and tick position"""
@@ -226,8 +226,8 @@ def PLOT(x_axis,y_axis,percent_diff):
 
 
 def create_html_template(graph):
-    insight_title = 'NET OPERATING INCOME'
-    insight_message = 'Top 5 National Tenants: Operating Income NOI Per Sq.ft'
+    insight_title = 'NET OPERATING INCOME : PSF'
+    insight_message = 'Top 5 National Tenants'
     insight_graph = graph
     connection = sql_connection()
     data = pd.read_sql("select * from [dbo].[EmailTemplateMasterInsights] where TemplateId = 3", connection)
@@ -235,6 +235,7 @@ def create_html_template(graph):
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
                                  insight_graph=insight_graph)
+    print(final)
     return final,data
 
 

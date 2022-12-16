@@ -235,6 +235,7 @@ def create_html_template(graph):
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
                                  insight_graph=insight_graph)
+
     return final,data
 
 

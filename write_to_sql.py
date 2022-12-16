@@ -5,8 +5,8 @@ server = 'epsql-srv-scioto-4see.database.windows.net'
 database = 'qasciotodb'
 username = 'sciotosqladmin'
 password = 'Ret$nQ2stkl21'
-cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
-cursor = cnxn.cursor()
+conn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
+cursor = conn.cursor()
 
 from datetime import date
 
@@ -33,7 +33,7 @@ dict = {
 	</tr>
 	<tr>
 		<td colspan="12">
-			<p style="margin-top:35px; margin-bottom:35px; text-align:center; font-family:Arial Narrow, Helvetica, sans-serif; font-size:34px; font-weight:bold; color:#1A7CAB;">INSIGHTS</p>
+			<p style="margin-top:35px; margin-bottom:35px; text-align:center; font-family:Arial Narrow, Helvetica, sans-serif; font-size:34px; font-weight:bold; color:#1A7CAB;">INSIGHT</p>
         </td>
 	</tr>
 	<tr>
@@ -54,7 +54,7 @@ dict = {
 	</tr>
 	<tr>
 		<td colspan="12">
-			<p style="margin-top:25px; margin-bottom:35px; text-align:center; font-family:Arial Narrow, Helvetica, sans-serif; font-size:24px; font-weight:bold; color:#1A7CAB;">WERE THESE INSIGHTS USEFUL ?</p>
+			<p style="margin-top:25px; margin-bottom:35px; text-align:center; font-family:Arial Narrow, Helvetica, sans-serif; font-size:24px; font-weight:bold; color:#1A7CAB;">IS THIS INSIGHT USEFUL ?</p>
         </td>
 	</tr>
 	<tr>
@@ -133,15 +133,23 @@ dict = {
     'CreatedBy': '',
 
 }
-dataframe_1 = pd.DataFrame([dict], columns=dict.keys())
+a = str(dict.get('Body'))
+cursor.execute('''
+                UPDATE [dbo].[EmailTemplateMasterInsights]
+                SET Body = {}
+                WHERE TemplateId = 3
+                '''.format(a))
+conn.commit()
+
+# dataframe_1 = pd.DataFrame([dict], columns=dict.keys())
 # dataframe_1.to_sql("EmailTemplateMasterInsights", schema='dbo',cnxn)
 
 import sqlalchemy
 import pyodbc
-from sqlalchemy import create_engine
-import urllib
-
-quoted = urllib.parse.quote_plus('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
-engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
-# # write the DataFrame to a table in the sql database
-dataframe_1.to_sql('EmailTemplateMasterInsights', schema='dbo', con = engine,if_exists='append',index = False)
+# from sqlalchemy import create_engine
+# import urllib
+#
+# quoted = urllib.parse.quote_plus('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
+# engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
+# # # write the DataFrame to a table in the sql database
+# dataframe_1.to_sql('EmailTemplateMasterInsights', schema='dbo', con = engine,if_exists='append',index = False)
