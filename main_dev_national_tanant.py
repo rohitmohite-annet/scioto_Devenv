@@ -16,6 +16,9 @@ import json
 from socketlabs.injectionapi import SocketLabsClient
 from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress,BulkRecipient,BulkMessage
 
+serverId = 36101
+injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
+
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'
     database = 'qasciotodb'
@@ -57,7 +60,7 @@ def persqft_data():
 
 
 
-months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 current_date = datetime.now()
 
 if int(current_date.strftime("%d")) > 20:
@@ -70,22 +73,31 @@ else:
 
 def fetch_data_NOI():
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewInsightsData] where KPI = 'Net Operating Income' AND PropertyManager <> ''  AND PostYear = {} AND PostMonth in {} ".format(year,monthlist), connection)
+    data = pd.read_sql(
+        "select PropertyManager,NetPostingPeriodDate,Amount,FiscalYear,FiscalMonth,L1,L2,L3,L4,L5,L6,L7,L8,L9 from [dbo].[viewIncomeStatement] where PropertyManager <> '' AND FiscalYear = {} AND FiscalMonth in {} ".format(
+            str(year)[-2:], monthlist), connection)
     connection.close()
     return data
+
+
+def insight_calculation(df):
+    Revenue = df[df['L3'] == 'REVENUE']['Amount'].sum()
+    Expenses = df[df['L3'] == 'OPERATING EXPENSES']['Amount'].sum()
+    diff = (Revenue - Expenses)
+    return round(diff, 2)
+
 
 def calcluate():
     get_data = fetch_data_NOI()
     Final_dataframe = pd.DataFrame()
-    for ind,i in  enumerate(list(get_data['PropertyManager'].unique())):
+    for ind, i in enumerate(list(get_data['PropertyManager'].unique())):
         National_tenant_data = get_data[get_data['PropertyManager'] == i]
-        NOI_sum = National_tenant_data['AttributeValue'].sum()
-        KPI = National_tenant_data['KPI'].iloc[0]
-        Type= National_tenant_data['Type'].iloc[0]
-        year = National_tenant_data['PostYear'].iloc[0]
-        towrite = {'Index' : ind ,'National_tenant': i,'KPI' : KPI,'Type' :Type ,'YEAR':year ,'NOI_amount': NOI_sum}
+        NOI_sum = insight_calculation(National_tenant_data)
+        KPI = 'NOI'
+        towrite = {'Index': ind, 'National_tenant': i, 'KPI': KPI, 'YEAR': year, 'NOI_amount': NOI_sum}
         dataframe_to_write = pd.DataFrame([towrite], columns=towrite.keys())
         Final_dataframe = Final_dataframe.append(dataframe_to_write, ignore_index=True)
+    # Final_dataframe = Final_dataframe[Final_dataframe.NOI_amount != 0]
     return Final_dataframe
 
 def merge_with_sqft():
@@ -94,7 +106,7 @@ def merge_with_sqft():
     merged_sqft = check.merge(sqft, on='National_tenant', how='left')
     merged_sqft['NOI_Persqft'] = round((merged_sqft['NOI_amount']/merged_sqft['Unit Square Feet']),2)
     merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
-    merged_sqft = merged_sqft[['Index','National_tenant','KPI','Type','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
+    merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
     return merged_sqft
 
 
@@ -230,12 +242,12 @@ def create_html_template(graph):
     insight_message = 'Top 5 National Tenants'
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[EmailTemplateMasterInsights] where TemplateId = 3", connection)
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 14", connection)
     connection.close()
+
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
                                  insight_graph=insight_graph)
-    print(final)
     return final,data
 
 
@@ -255,68 +267,62 @@ if __name__=='__main__':
             value = datamerged_top5_last_year[datamerged_top5_last_year['National_tenant'] == prop]['NOI_Persqft'].values[0]
             last_year_values.append(value)
 
+        try:
+    # ===========percent diff each property=====================
+            percent_diff = []
+            for curre,prev in zip(top_5_values,last_year_values):
+
+                pe_df = ((curre - prev) / prev) * 100
+                ok = "{:.2f}".format(pe_df)
+                percent_diff.append(ok)
+
+
+            # ==============PLOT=====================
+            x_axis = top5properties
+            y_axis = top_5_values
+            graph = PLOT(x_axis,y_axis,percent_diff)
+            final,data_template = create_html_template(graph)
+
+            try:
+# =====================write the DataFrame to a table in the sql database
+                for index, row in data_template.iterrows():
+                    InsightsMasterId = row['InsightsMasterId']
+                    TemplateId = row['TemplateId']
+                    EmailTOAddress = row['UserEmail']
+                    EmailCCAddress = row['EmailCCAddress']
+                    Subject = row['Subject']
+                    Body = str(final)
+                    SendToId = row['SendToId']
+                    storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
+                    params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
+                    connection = sql_connection()
+                    cursor = connection.cursor()
+                    cursor.execute(storedProc, params)
+                    connection.commit()
+
+
+                    message = BasicMessage()
+                    message.subject = Subject
+                    message.html_body = str(final)
+                    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+                    for to_item in EmailTOAddress.split(','):
+                        message.add_to_email_address(to_item)
+
+                    for cc_item in EmailCCAddress.split(','):
+                        message.add_cc_email_address(cc_item)
+
+                    client = SocketLabsClient(serverId, injectionApiKey)
+                    response = client.send(message)
+                    success_ran()
+
+            except Exception as e:
+                print("ERROR: " + str(e))
+                cron_fail()
+        except Exception as e:
+            print("ERROR: " + str(e))
+            cron_fail()
     except Exception as e:
-        logging.info(e)
         sql_conn_fail()
 
-    try:
-        # ===========percent diff each property=====================
-        percent_diff = []
-        for curre,prev in zip(top_5_values,last_year_values):
-
-            pe_df = ((curre - prev) / prev) * 100
-            ok = "{:.2f}".format(pe_df)
-            percent_diff.append(ok)
-
-
-        # ==============PLOT=====================
-        x_axis = top5properties
-        y_axis = top_5_values
-        # print('Property Name',top5properties)
-        # print('current year values',top_5_values)
-        # print('last year values',last_year_values)
-        # print('percent diff',percent_diff)
-        graph = PLOT(x_axis,y_axis,percent_diff)
-        final,data_template = create_html_template(graph)
-
-
-# =====================write the DataFrame to a table in the sql database
-        data_to_write_Email={
-        'TemplateId' : data_template.TemplateId[0],
-        'EmailTOAddress' : data_template.EmailTOAddress[0],
-        'EmailCCAddress' : data_template.EmailCCAddress[0],
-        'Subject' : data_template.Subject[0],
-        'Body' : str(final),
-        'IsRead':''}
-        writeto_database = pd.DataFrame([data_to_write_Email], columns=data_to_write_Email.keys())
-
-        engine = towritesql()
-        # writeto_database.to_sql('EmailHistoryInsights', schema='dbo', con=engine, if_exists='append', index=False)
-
-# ===========================Send mail=============================
-        try:
-            serverId = 36101
-            injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
-
-            message = BasicMessage()
-            message.subject = writeto_database.Subject[0]
-            message.html_body = str(final)
-            message.from_email_address = EmailAddress("rohit.mohite@annet.com")
-            for to_item in writeto_database.EmailTOAddress[0].split(','):
-                message.add_to_email_address(to_item)
-
-            # for cc_item in writeto_database.EmailCCAddress[0].split(','):
-            #     message.add_cc_email_address(cc_item)
-            client = SocketLabsClient(serverId, injectionApiKey)
-            response = client.send(message)
-            success_ran()
-            print(json.dumps(response.to_json(), indent=2))
-        except Exception as e:
-            logging.info(e)
-            cron_fail()
-
-    except Exception as e:
-        logging.info(e)
-        cron_fail()
 
 

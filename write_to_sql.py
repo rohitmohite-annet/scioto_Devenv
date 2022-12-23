@@ -134,12 +134,6 @@ dict = {
 
 }
 a = str(dict.get('Body'))
-cursor.execute('''
-                UPDATE [dbo].[EmailTemplateMasterInsights]
-                SET Body = {}
-                WHERE TemplateId = 3
-                '''.format(a))
-conn.commit()
 
 # dataframe_1 = pd.DataFrame([dict], columns=dict.keys())
 # dataframe_1.to_sql("EmailTemplateMasterInsights", schema='dbo',cnxn)
@@ -153,3 +147,8 @@ import pyodbc
 # engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
 # # # write the DataFrame to a table in the sql database
 # dataframe_1.to_sql('EmailTemplateMasterInsights', schema='dbo', con = engine,if_exists='append',index = False)
+
+
+
+sqft = pd.read_sql("select [TemplateId],[Body] FROM [dbo].[EmailTemplateMasterInsights] where  TemplateId = 3",conn)
+print(sqft.Body[0])
