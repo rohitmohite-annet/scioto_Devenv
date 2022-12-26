@@ -265,7 +265,7 @@ if __name__=='__main__':
         for prop in top5properties:
             value = datamerged_top5_last_year[datamerged_top5_last_year['National_tenant'] == prop]['NOI_Persqft'].values[0]
             last_year_values.append(value)
-
+        print(top_5_values,top5properties,last_year_values)
         try:
     # ===========percent diff each property=====================
             percent_diff = []

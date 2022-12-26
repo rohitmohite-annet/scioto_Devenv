@@ -30,15 +30,12 @@ current_date = datetime.now()
 
 if int(current_date.strftime("%d")) > 20:
     current_month = datetime.now().month - 1
-
 else:
     current_month = datetime.now().month - 2
 
 
 def fetch_data_NOI():
     connection = sql_connection()
-    print(str(year)[-2:])
-    print(current_month)
     data = pd.read_sql("select  * from [dbo].[viewIncomeStatement] where PropertyManager <> ''  and  FiscalYear = {} and FiscalMonth = {} ".format(str(year)[-2:],current_month), connection)
     connection.close()
     return data
@@ -57,7 +54,6 @@ def persqft_data():
         dataframe_to_write = pd.DataFrame([write_to_data], columns=write_to_data.keys())
         Sqft_data = Sqft_data.append(dataframe_to_write, ignore_index=True)
     Sqft_data = Sqft_data.loc[Sqft_data['Unit Square Feet'] > 0]
-
     return Sqft_data
 
 def insight_calculation(df):
@@ -96,39 +92,147 @@ def current_top_5_property():
     return top5properties,top_5_values
 
 
+def PLOT(x_axis,y_axis):
+    sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
+    ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
+    ax.figure.set_size_inches(10, 6)
+
+    def currency(x, pos):
+        """The two args are the value and tick position"""
+        if x >= 1e6:
+            s = '${:1.1f}M'.format(x * 1e-6)
+        elif x >= 1e3:
+            s = '${:1.0f}K'.format(x * 1e-3)
+        else:
+            s = '${:1.0f}'.format(x)
+        return s
+
+    def change_width(ax, new_value):
+        for patch in ax.patches:
+            current_width = patch.get_width()
+            diff = current_width - new_value
+
+            # we change the bar width
+            patch.set_width(new_value)
+
+            # we recenter the bar
+            patch.set_x(patch.get_x() + diff * .5)
+
+    change_width(ax, 0.6)
+
+    new_patches = []
+    mut_Aspect = max(y_axis)
+
+    for patch in reversed(ax.patches):
+        bb = patch.get_bbox()
+
+        p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
+                                abs(bb.width), abs(bb.height),
+                                boxstyle="round, pad=0.030,rounding_size = 0.045",
+                                ec="none", fc='#4298af',
+                                mutation_aspect=mut_Aspect
+                                )
+        patch.remove()
+        new_patches.append(p_bbox)
+
+    for patch in new_patches:
+        ax.add_patch(patch)
+
+    sns.despine(top=True, right=True)
+
+    ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
+    plt.tick_params(labelsize=14.5,pad=6)
+    # for index, value in enumerate(y_axis):
+    #     plt.text(index, value * 1, '$' + str(value), fontsize=17, ha='center', va='top',
+    #              color='white', weight='bold')
+
+    plt.ticklabel_format(style='plain', axis='y')
+    plt.rcParams["font.family"] = "Open Sans"
+
+    def add_value_labels(ax, spacing=10):
+        # For each bar: Place a label
+        for rect in ax.patches:
+
+            # Get X and Y placement of label from rect.
+            y_value = rect.get_height()
+            x_value = rect.get_x() + rect.get_width() / 2
+
+            # Number of points between bar and label. Change to your liking.
+            space = spacing
+            # Vertical alignment for positive values
+            va = 'bottom'
+
+            # If value of bar is negative: Place label below bar
+            if y_value < 0:
+                # Invert space to place label below
+                space *= -1
+                # Vertically align label at top
+                va = 'top'
+
+            # Use Y value as label and format number with one decimal place
+            label = "${:.1f}".format(y_value)
+
+
+            # Create annotation
+            ax.annotate(
+                label,  # Use `label` as label
+                (x_value, y_value),  # Place label at end of the bar
+                xytext=(0, space),  # Vertically shift label by `space`
+                textcoords="offset points",  # Interpret `xytext` as offset in points
+                fontsize = 17,
+                weight='bold',
+                ha='center',  # Horizontally center label
+                va=va)  # Vertically align label differently for
+            # positive and negative values.
+
+    # Call the function above. All the magic happens there.
+    add_value_labels(ax)
+    ax.yaxis.set_major_formatter(currency)
+    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+        label.set_fontsize(17)
+        label.set_fontweight('bold')
+    ax.spines['left'].set_color('black')
+    ax.spines['bottom'].set_color('black')
+    plt.tight_layout()
+
+    # plt.savefig('MOM.png')
+    image_stream = BytesIO()
+    plt.savefig(image_stream)
+    image_stream.seek(0)
+    my_base64_jpgData = base64.b64encode(image_stream.read())
+    graph = my_base64_jpgData.decode("utf-8")
+    return 'graph'
+
+
+def create_html_template(graph):
+    insight_title = 'NET OPERATING INCOME : PSF'
+    insight_message = 'Top 5 National Tenants for {} {}'.format(current_month,year)
+    insight_graph = graph
+    connection = sql_connection()
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 12", connection)
+    connection.close()
+
+    Html_Template = data.Body[0]
+    final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
+                                 insight_graph=insight_graph)
+    return final,data
+
+
 if __name__=='__main__':
     try:
-        global year
-        year = str(current_date.year)
-        merge_with_sqft()
+        global year,current_month
 
-#         top5properties,top_5_values = current_top_5_property()
+        year = str(current_date.year)
+        top5properties,top_5_values = current_top_5_property()
 #
-#         # ================last_year====================
-#         year = str(current_date.year-1)
-#         last_year_data = merge_with_sqft()
-#         datamerged_top5_last_year = last_year_data.loc[last_year_data['National_tenant'].isin(top5properties)]
-#
-#         last_year_values = []
-#         for prop in top5properties:
-#             value = datamerged_top5_last_year[datamerged_top5_last_year['National_tenant'] == prop]['NOI_Persqft'].values[0]
-#             last_year_values.append(value)
-#
-#         try:
-#     # ===========percent diff each property=====================
-#             percent_diff = []
-#             for curre,prev in zip(top_5_values,last_year_values):
-#
-#                 pe_df = ((curre - prev) / prev) * 100
-#                 ok = "{:.2f}".format(pe_df)
-#                 percent_diff.append(ok)
 #
 #
 #             # ==============PLOT=====================
-#             x_axis = top5properties
-#             y_axis = top_5_values
-#             graph = PLOT(x_axis,y_axis,percent_diff)
-#             final,data_template = create_html_template(graph)
+        x_axis = top5properties
+        y_axis = top_5_values
+        graph = PLOT(x_axis,y_axis)
+        final,data_template = create_html_template(graph)
+        print(final)
 #
 #             try:
 # # =====================write the DataFrame to a table in the sql database
