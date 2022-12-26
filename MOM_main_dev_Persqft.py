@@ -13,12 +13,8 @@ import pyodbc
 from sqlalchemy import create_engine
 import urllib
 import json
-import azure.functions as func
 from socketlabs.injectionapi import SocketLabsClient
-from socketlabs.injectionapi.message.__imports__ import *
-
-serverId = 36101
-injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
+from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress,BulkRecipient,BulkMessage
 
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'
@@ -26,7 +22,7 @@ def sql_connection():
     username = 'sciotosqladmin'
     password = 'Ret$nQ2stkl21'
     cnxn = pyodbc.connect(
-        'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     return cnxn
 
 
@@ -37,7 +33,7 @@ def towritesql():
     password = 'Ret$nQ2stkl21'
 
     quoted = urllib.parse.quote_plus(
-        'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
     return engine
 
@@ -57,6 +53,7 @@ def persqft_data():
         dataframe_to_write = pd.DataFrame([write_to_data], columns=write_to_data.keys())
         Sqft_data = Sqft_data.append(dataframe_to_write, ignore_index=True)
     Sqft_data = Sqft_data.loc[Sqft_data['Unit Square Feet'] > 0]
+
     return Sqft_data
 
 
@@ -108,6 +105,7 @@ def merge_with_sqft():
     merged_sqft['NOI_Persqft'] = round((merged_sqft['NOI_amount']/merged_sqft['Unit Square Feet']),2)
     merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
+    merged_sqft.to_csv('mergesqft.csv')
     return merged_sqft
 
 
@@ -252,9 +250,7 @@ def create_html_template(graph):
     return final,data
 
 
-def main(mytimer: func.TimerRequest) -> None:
-    utc_timestamp = datetime.datetime.utcnow().replace(
-        tzinfo=datetime.timezone.utc).isoformat()
+if __name__=='__main__':
     try:
         global year
         year = str(current_date.year)
@@ -319,13 +315,13 @@ def main(mytimer: func.TimerRequest) -> None:
                     success_ran()
 
             except Exception as e:
-                logging.info(e)
+                print("ERROR: " + str(e))
                 cron_fail()
         except Exception as e:
-            logging.info(e)
+            print("ERROR: " + str(e))
             cron_fail()
     except Exception as e:
         sql_conn_fail()
 
-    logging.info('Python timer trigger function ran at %s', utc_timestamp)
+
 

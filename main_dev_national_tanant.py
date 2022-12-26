@@ -53,6 +53,7 @@ def persqft_data():
         dataframe_to_write = pd.DataFrame([write_to_data], columns=write_to_data.keys())
         Sqft_data = Sqft_data.append(dataframe_to_write, ignore_index=True)
     Sqft_data = Sqft_data.loc[Sqft_data['Unit Square Feet'] > 0]
+
     return Sqft_data
 
 
@@ -104,6 +105,7 @@ def merge_with_sqft():
     merged_sqft['NOI_Persqft'] = round((merged_sqft['NOI_amount']/merged_sqft['Unit Square Feet']),2)
     merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
+    merged_sqft.to_csv('mergesqft.csv')
     return merged_sqft
 
 
