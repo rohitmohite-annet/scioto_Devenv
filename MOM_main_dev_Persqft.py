@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import warnings
 import logging
+import calendar
 warnings.filterwarnings("ignore")
 from matplotlib.patches import FancyBboxPatch
 import seaborn as sns
@@ -25,6 +26,7 @@ def sql_connection():
         'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     return cnxn
 
+global year,current_month
 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 current_date = datetime.now()
 
@@ -201,12 +203,12 @@ def PLOT(x_axis,y_axis):
     image_stream.seek(0)
     my_base64_jpgData = base64.b64encode(image_stream.read())
     graph = my_base64_jpgData.decode("utf-8")
-    return 'graph'
+    return graph
 
 
-def create_html_template(graph):
+def create_html_template(graph,current_month,year):
     insight_title = 'NET OPERATING INCOME : PSF'
-    insight_message = 'Top 5 National Tenants for {} {}'.format(current_month,year)
+    insight_message = 'Top 5 National Tenants for {} {}'.format(calendar.month_abbr[current_month],year)
     insight_graph = graph
     connection = sql_connection()
     data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 12", connection)
@@ -220,58 +222,54 @@ def create_html_template(graph):
 
 if __name__=='__main__':
     try:
-        global year,current_month
-
         year = str(current_date.year)
         top5properties,top_5_values = current_top_5_property()
-#
-#
+
 #
 #             # ==============PLOT=====================
         x_axis = top5properties
         y_axis = top_5_values
         graph = PLOT(x_axis,y_axis)
-        final,data_template = create_html_template(graph)
-        print(final)
-#
-#             try:
-# # =====================write the DataFrame to a table in the sql database
-#                 for index, row in data_template.iterrows():
-#                     InsightsMasterId = row['InsightsMasterId']
-#                     TemplateId = row['TemplateId']
-#                     EmailTOAddress = row['UserEmail']
-#                     EmailCCAddress = row['EmailCCAddress']
-#                     Subject = row['Subject']
-#                     Body = str(final)
-#                     SendToId = row['SendToId']
-#                     storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
-#                     params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
-#                     connection = sql_connection()
-#                     cursor = connection.cursor()
-#                     cursor.execute(storedProc, params)
-#                     connection.commit()
-#
-#
-#                     message = BasicMessage()
-#                     message.subject = Subject
-#                     message.html_body = str(final)
-#                     message.from_email_address = EmailAddress("rohit.mohite@annet.com")
-#                     for to_item in EmailTOAddress.split(','):
-#                         message.add_to_email_address(to_item)
-#
-#                     for cc_item in EmailCCAddress.split(','):
-#                         message.add_cc_email_address(cc_item)
-#
-#                     client = SocketLabsClient(serverId, injectionApiKey)
-#                     response = client.send(message)
-#                     success_ran()
-#
-#             except Exception as e:
-#                 print("ERROR: " + str(e))
-#                 cron_fail()
-#         except Exception as e:
-#             print("ERROR: " + str(e))
-#             cron_fail()
+        final,data_template = create_html_template(graph,current_month,year)
+
+
+
+        try:
+# =====================write the DataFrame to a table in the sql database
+            for index, row in data_template.iterrows():
+                InsightsMasterId = row['InsightsMasterId']
+                TemplateId = row['TemplateId']
+                EmailTOAddress = row['UserEmail']
+                EmailCCAddress = row['EmailCCAddress']
+                Subject = row['Subject']
+                Body = str(final)
+                SendToId = row['SendToId']
+                storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
+                params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
+                connection = sql_connection()
+                cursor = connection.cursor()
+                cursor.execute(storedProc, params)
+                connection.commit()
+
+
+                message = BasicMessage()
+                message.subject = Subject
+                message.html_body = str(final)
+                message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+                for to_item in EmailTOAddress.split(','):
+                    message.add_to_email_address(to_item)
+
+                for cc_item in EmailCCAddress.split(','):
+                    message.add_cc_email_address(cc_item)
+
+                client = SocketLabsClient(serverId, injectionApiKey)
+                response = client.send(message)
+                success_ran()
+
+        except Exception as e:
+            print("ERROR: " + str(e))
+            cron_fail()
+
     except Exception as e:
         print(e)
         # sql_conn_fail()
