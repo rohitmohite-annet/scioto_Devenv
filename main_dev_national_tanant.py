@@ -72,7 +72,7 @@ else:
 def fetch_data_NOI():
     connection = sql_connection()
     data = pd.read_sql(
-        "select PropertyManager,NetPostingPeriodDate,Amount,FiscalYear,FiscalMonth,L1,L2,L3,L4,L5,L6,L7,L8,L9 from [dbo].[viewIncomeStatement] where PropertyManager <> '' AND FiscalYear = {} AND FiscalMonth in {} ".format(
+        "select PropertyManager,NetPostingPeriodDate,Amount,FiscalYear,FiscalMonth,L1,L2,L3,L4,L5,L6,L7,L8,L9 from [dbo].[viewIncomeStatement] where PropertyManager <> '' AND FiscalYear = {} AND FiscalMonth in {} and Ledger = 'AA' ".format(
             str(year)[-2:], monthlist), connection)
     connection.close()
     return data
@@ -105,7 +105,7 @@ def merge_with_sqft():
     merged_sqft['NOI_Persqft'] = round((merged_sqft['NOI_amount']/merged_sqft['Unit Square Feet']),2)
     merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
-    merged_sqft.to_csv('mergesqft.csv')
+    merged_sqft.to_csv('mergesqft_2021.csv')
     return merged_sqft
 
 
