@@ -29,19 +29,20 @@ def sql_connection():
         'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     return cnxn
 
-global year,current_month
-months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-current_date = datetime.now()
+# global year,month
 
-if int(current_date.strftime("%d")) > 20:
-    current_month = datetime.now().month - 1
-else:
-    current_month = datetime.now().month - 2
-
+# months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+# current_date = datetime.now()
+#
+# if int(current_date.strftime("%d")) > 20:
+#     current_month = datetime.now().month - 1
+# else:
+#     current_month = datetime.now().month - 2
+#
 
 def fetch_data_NOI():
     connection = sql_connection()
-    data = pd.read_sql("select  * from [dbo].[viewIncomeStatement] where PropertyManager <> ''  and  FiscalYear = {} and FiscalMonth = {} ".format(str(year)[-2:],current_month), connection)
+    data = pd.read_sql("select  * from [dbo].[viewIncomeStatement] where PropertyManager <> ''  and  FiscalYear = {} and FiscalMonth = {} ".format(str(year)[-2:],month), connection)
     connection.close()
     return data
 
@@ -208,14 +209,14 @@ def current_top_5_property():
 #     graph = my_base64_jpgData.decode("utf-8")
 #     return graph
 
-def PLOT1(data_2022,NT_2022,data_2021,NT_2021):
+def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
     width = 0.4
     x = np.arange(1, 6)
     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
     fig, ax = plt.subplots(figsize=(15, 8))
 
-    ax.bar(np.array([-0.2, 0.8, 1.8, 2.8, 3.8]), data_2022, width, tick_label=NT_2022, color='#4298af', label='2022')
-    ax.bar(np.array([0.2, 1.2, 2.2, 3.2, 4.2]), data_2021, width, tick_label=NT_2022, color='#93a9d0', label='2021')
+    ax.bar(np.array([-0.2, 0.8, 1.8, 2.8, 3.8]), data_2022, width, tick_label=NT_2022, color='#4298af', label=current_year)
+    ax.bar(np.array([0.2, 1.2, 2.2, 3.2, 4.2]), data_2021, width, tick_label=NT_2022, color='#93a9d0', label=previous_year)
 
     plt.xticks(np.array([-0.2, 0.8, 1.8, 2.8, 3.8, 0.2, 1.2, 2.2, 3.2, 4.2]),
                np.array(np.concatenate([NT_2022, NT_2021])))
@@ -294,15 +295,20 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021):
     ax.spines['bottom'].set_color('black')
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.show()
-    return 'graph'
+    # plt.show()
+    image_stream = BytesIO()
+    plt.savefig(image_stream)
+    image_stream.seek(0)
+    my_base64_jpgData = base64.b64encode(image_stream.read())
+    graph = my_base64_jpgData.decode("utf-8")
+    return graph
 
 def create_html_template(graph,current_month,year):
     insight_title = 'NET OPERATING INCOME : PSF'
     insight_message = 'Top 5 National Tenants for {} {}'.format(calendar.month_abbr[current_month],year)
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 12", connection)
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 14", connection)
     connection.close()
 
     Html_Template = data.Body[0]
@@ -313,22 +319,43 @@ def create_html_template(graph,current_month,year):
 
 if __name__=='__main__':
     try:
-        global year
-        year = str(current_date.year)
+        global year, month
+
+        todaysdate = date.today()
+        if (todaysdate.day) < 21:
+            if (todaysdate.month == 1):
+                month = 11
+                year = todaysdate.year - 1
+            elif todaysdate.month == 2:
+                month = 12
+                year = todaysdate.year - 1
+            else:
+                month = todaysdate.month - 2
+                year = todaysdate.year
+        else:
+            if (todaysdate.month == 1):
+                month = 12
+                year = todaysdate.year - 1
+            else:
+                month = todaysdate.month - 1
+                year = todaysdate.year
+
         top5properties,top_5_values = current_top_5_property()
+        current_year = year
         print(top5properties,top_5_values)
-        year = str(current_date.year - 1)
+
+
+        year = str(current_year - 1)
+        previous_year = year
         top5properties_last, top_5_values_last = current_top_5_property()
 
-        PLOT1(top_5_values,top5properties,top_5_values_last,top5properties_last)
+        graph = PLOT1(top_5_values,top5properties,top_5_values_last,top5properties_last,current_year,previous_year)
         print(top5properties_last, top_5_values_last)
 
 #
-#             # ==============PLOT=====================
-        x_axis = top5properties
-        y_axis = top_5_values
-        graph = PLOT(x_axis,y_axis)
-        final,data_template = create_html_template(graph,current_month,year)
+        final,data_template = create_html_template(graph,month,year)
+        print(final)
+        print(data_template.head())
 
 
 

@@ -55,18 +55,29 @@ def persqft_data():
 
     return Sqft_data
 
-
-
-months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-current_date = datetime.now()
-
-if int(current_date.strftime("%d")) > 20:
-    current_month = datetime.now().month - 1
-    monthlist = tuple(months[:current_month])
-else:
-    current_month = datetime.now().month - 2
-    monthlist = tuple(months[:current_month])
-
+#
+# months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+# global year,month
+# todaysdate = date.today()
+# if (todaysdate.day) < 21:
+#     if (todaysdate.month == 1):
+#         month = 11
+#         year = todaysdate.year - 1
+#     elif todaysdate.month == 2:
+#         month = 12
+#         year = todaysdate.year - 1
+#     else:
+#         month = todaysdate.month - 2
+#         year = todaysdate.year
+# else:
+#     if (todaysdate.month == 1):
+#         month = 12
+#         year = todaysdate.year - 1
+#     else:
+#         month = todaysdate.month - 1
+#         year = todaysdate.year
+#
+# monthlist = tuple(months[:month])
 
 def fetch_data_NOI():
     connection = sql_connection()
@@ -251,12 +262,35 @@ def create_html_template(graph):
 
 if __name__=='__main__':
     try:
-        global year
-        year = str(current_date.year)
+        global year, month,monthlist
+        months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+
+        todaysdate = date.today()
+        if (todaysdate.day) < 21:
+            if (todaysdate.month == 1):
+                month = 11
+                year = todaysdate.year - 1
+            elif todaysdate.month == 2:
+                month = 12
+                year = todaysdate.year - 1
+            else:
+                month = todaysdate.month - 2
+                year = todaysdate.year
+        else:
+            if (todaysdate.month == 1):
+                month = 12
+                year = todaysdate.year - 1
+            else:
+                month = todaysdate.month - 1
+                year = todaysdate.year
+
+        monthlist = tuple(months[:month])
+
+        year = str(year)
         top5properties,top_5_values = current_top_5_property()
 
         # ================last_year====================
-        year = str(current_date.year-1)
+        year = str(int(year)-1)
         last_year_data = merge_with_sqft()
         datamerged_top5_last_year = last_year_data.loc[last_year_data['National_tenant'].isin(top5properties)]
 
@@ -280,6 +314,7 @@ if __name__=='__main__':
             y_axis = top_5_values
             graph = PLOT(x_axis,y_axis,percent_diff)
             final,data_template = create_html_template(graph)
+            print(final)
 
 #             try:
 # # =====================write the DataFrame to a table in the sql database
