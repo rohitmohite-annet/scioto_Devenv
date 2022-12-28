@@ -43,12 +43,11 @@ def persqft_data():
     connection = sql_connection()
     sqft = pd.read_sql("select [PropertyID],[PropertyManager],[PropertyPKID],[Company Description],[Property Status],[Property Type],[Unit Square Feet] from [dbo].[viewPropertyUnitLeaseDetails] where PropertyManager <> '' ",connection)
     connection.close()
-    sqft.drop_duplicates(subset="PropertyID", inplace=True)
-
     Sqft_data = pd.DataFrame()
     for key, Promanage in enumerate(list(sqft['PropertyManager'].unique())):
         datasq = sqft[sqft['PropertyManager'] == Promanage]
         sqft_sum = datasq['Unit Square Feet'].sum()
+
         write_to_data = {'National_tenant': Promanage, 'Unit Square Feet': sqft_sum}
         dataframe_to_write = pd.DataFrame([write_to_data], columns=write_to_data.keys())
         Sqft_data = Sqft_data.append(dataframe_to_write, ignore_index=True)
@@ -105,7 +104,7 @@ def merge_with_sqft():
     merged_sqft['NOI_Persqft'] = round((merged_sqft['NOI_amount']/merged_sqft['Unit Square Feet']),2)
     merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
-    merged_sqft.to_csv('mergesqft_2021.csv')
+    merged_sqft.to_csv('mergesqft_{}'.format(year)+'.csv')
     return merged_sqft
 
 
@@ -282,41 +281,42 @@ if __name__=='__main__':
             graph = PLOT(x_axis,y_axis,percent_diff)
             final,data_template = create_html_template(graph)
 
-            try:
-# =====================write the DataFrame to a table in the sql database
-                for index, row in data_template.iterrows():
-                    InsightsMasterId = row['InsightsMasterId']
-                    TemplateId = row['TemplateId']
-                    EmailTOAddress = row['UserEmail']
-                    EmailCCAddress = row['EmailCCAddress']
-                    Subject = row['Subject']
-                    Body = str(final)
-                    SendToId = row['SendToId']
-                    storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
-                    params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
-                    connection = sql_connection()
-                    cursor = connection.cursor()
-                    cursor.execute(storedProc, params)
-                    connection.commit()
-
-
-                    message = BasicMessage()
-                    message.subject = Subject
-                    message.html_body = str(final)
-                    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
-                    for to_item in EmailTOAddress.split(','):
-                        message.add_to_email_address(to_item)
-
-                    for cc_item in EmailCCAddress.split(','):
-                        message.add_cc_email_address(cc_item)
-
-                    client = SocketLabsClient(serverId, injectionApiKey)
-                    response = client.send(message)
-                    success_ran()
-
-            except Exception as e:
-                print("ERROR: " + str(e))
-                cron_fail()
+#             try:
+# # =====================write the DataFrame to a table in the sql database
+#                 for index, row in data_template.iterrows():
+#                     InsightsMasterId = row['InsightsMasterId']
+#                     TemplateId = row['TemplateId']
+#                     EmailTOAddress = row['UserEmail']
+#                     EmailCCAddress = row['EmailCCAddress']
+#                     Subject = row['Subject']
+#                     Body = str(final)
+#                     SendToId = row['SendToId']
+#                     storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
+#                     params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
+#                     connection = sql_connection()
+#                     cursor = connection.cursor()
+#                     cursor.execute(storedProc, params)
+#                     connection.commit()
+#
+#
+#                     message = BasicMessage()
+#                     message.subject = Subject
+#                     message.html_body = str(final)
+#                     message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+#
+#                     for to_item in EmailTOAddress.split(','):
+#                         message.add_to_email_address(to_item)
+#
+#                     for cc_item in EmailCCAddress.split(','):
+#                         message.add_cc_email_address(cc_item)
+#
+#                     client = SocketLabsClient(serverId, injectionApiKey)
+#                     response = client.send(message)
+#                     success_ran()
+#
+#             except Exception as e:
+#                 print("ERROR: " + str(e))
+#                 cron_fail()
         except Exception as e:
             print("ERROR: " + str(e))
             cron_fail()

@@ -26,3 +26,8 @@ def sql_connection():
     cnxn = pyodbc.connect(
         'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     return cnxn
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.patches as mpatches

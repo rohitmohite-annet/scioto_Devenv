@@ -11,6 +11,9 @@ import base64
 from io import BytesIO
 from emailto_send import *
 import pyodbc
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.patches as mpatches
 from sqlalchemy import create_engine
 import urllib
 import json
@@ -94,10 +97,131 @@ def current_top_5_property():
     return top5properties,top_5_values
 
 
-def PLOT(x_axis,y_axis):
+# def PLOT(x_axis,y_axis):
+#     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
+#     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
+#     ax.figure.set_size_inches(10, 6)
+#
+#     def currency(x, pos):
+#         """The two args are the value and tick position"""
+#         if x >= 1e6:
+#             s = '${:1.1f}M'.format(x * 1e-6)
+#         elif x >= 1e3:
+#             s = '${:1.0f}K'.format(x * 1e-3)
+#         else:
+#             s = '${:1.0f}'.format(x)
+#         return s
+#
+#     def change_width(ax, new_value):
+#         for patch in ax.patches:
+#             current_width = patch.get_width()
+#             diff = current_width - new_value
+#
+#             # we change the bar width
+#             patch.set_width(new_value)
+#
+#             # we recenter the bar
+#             patch.set_x(patch.get_x() + diff * .5)
+#
+#     change_width(ax, 0.6)
+#
+#     new_patches = []
+#     mut_Aspect = max(y_axis)
+#
+#     for patch in reversed(ax.patches):
+#         bb = patch.get_bbox()
+#
+#         p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
+#                                 abs(bb.width), abs(bb.height),
+#                                 boxstyle="round, pad=0.030,rounding_size = 0.045",
+#                                 ec="none", fc='#4298af',
+#                                 mutation_aspect=mut_Aspect
+#                                 )
+#         patch.remove()
+#         new_patches.append(p_bbox)
+#
+#     for patch in new_patches:
+#         ax.add_patch(patch)
+#
+#     sns.despine(top=True, right=True)
+#
+#     ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
+#     plt.tick_params(labelsize=14.5,pad=6)
+#     # for index, value in enumerate(y_axis):
+#     #     plt.text(index, value * 1, '$' + str(value), fontsize=17, ha='center', va='top',
+#     #              color='white', weight='bold')
+#
+#     plt.ticklabel_format(style='plain', axis='y')
+#     plt.rcParams["font.family"] = "Open Sans"
+#
+#     def add_value_labels(ax, spacing=10):
+#         # For each bar: Place a label
+#         for rect in ax.patches:
+#
+#             # Get X and Y placement of label from rect.
+#             y_value = rect.get_height()
+#             x_value = rect.get_x() + rect.get_width() / 2
+#
+#             # Number of points between bar and label. Change to your liking.
+#             space = spacing
+#             # Vertical alignment for positive values
+#             va = 'bottom'
+#
+#             # If value of bar is negative: Place label below bar
+#             if y_value < 0:
+#                 # Invert space to place label below
+#                 space *= -1
+#                 # Vertically align label at top
+#                 va = 'top'
+#
+#             # Use Y value as label and format number with one decimal place
+#             label = "${:.1f}".format(y_value)
+#
+#
+#             # Create annotation
+#             ax.annotate(
+#                 label,  # Use `label` as label
+#                 (x_value, y_value),  # Place label at end of the bar
+#                 xytext=(0, space),  # Vertically shift label by `space`
+#                 textcoords="offset points",  # Interpret `xytext` as offset in points
+#                 fontsize = 17,
+#                 weight='bold',
+#                 ha='center',  # Horizontally center label
+#                 va=va)  # Vertically align label differently for
+#             # positive and negative values.
+#
+#     # Call the function above. All the magic happens there.
+#     add_value_labels(ax)
+#     ax.yaxis.set_major_formatter(currency)
+#     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+#         label.set_fontsize(17)
+#         label.set_fontweight('bold')
+#     ax.spines['left'].set_color('black')
+#     ax.spines['bottom'].set_color('black')
+#     plt.tight_layout()
+#
+#     # plt.savefig('MOM.png')
+#     image_stream = BytesIO()
+#     plt.savefig(image_stream)
+#     image_stream.seek(0)
+#     my_base64_jpgData = base64.b64encode(image_stream.read())
+#     graph = my_base64_jpgData.decode("utf-8")
+#     return graph
+
+def PLOT1(data_2022,NT_2022,data_2021,NT_2021):
+    width = 0.4
+    x = np.arange(1, 6)
     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
-    ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
-    ax.figure.set_size_inches(10, 6)
+    fig, ax = plt.subplots(figsize=(15, 8))
+
+    ax.bar(np.array([-0.2, 0.8, 1.8, 2.8, 3.8]), data_2022, width, tick_label=NT_2022, color='#4298af', label='2022')
+    ax.bar(np.array([0.2, 1.2, 2.2, 3.2, 4.2]), data_2021, width, tick_label=NT_2022, color='#93a9d0', label='2021')
+
+    plt.xticks(np.array([-0.2, 0.8, 1.8, 2.8, 3.8, 0.2, 1.2, 2.2, 3.2, 4.2]),
+               np.array(np.concatenate([NT_2022, NT_2021])))
+
+    ax.margins(x=0.06)
+    plt.legend(bbox_to_anchor=(0.93, 1), loc='upper left', borderaxespad=0, prop={'size': 23, 'weight': 'bold'})
 
     def currency(x, pos):
         """The two args are the value and tick position"""
@@ -109,102 +233,69 @@ def PLOT(x_axis,y_axis):
             s = '${:1.0f}'.format(x)
         return s
 
-    def change_width(ax, new_value):
-        for patch in ax.patches:
-            current_width = patch.get_width()
-            diff = current_width - new_value
+    ax.yaxis.set_major_formatter(currency)
 
-            # we change the bar width
-            patch.set_width(new_value)
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
 
-            # we recenter the bar
-            patch.set_x(patch.get_x() + diff * .5)
-
-    change_width(ax, 0.6)
+    ax.set_xticks(x - 0.1001, minor=True)
 
     new_patches = []
-    mut_Aspect = max(y_axis)
-
     for patch in reversed(ax.patches):
         bb = patch.get_bbox()
-
+        color = patch.get_facecolor()
         p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
                                 abs(bb.width), abs(bb.height),
-                                boxstyle="round, pad=0.030,rounding_size = 0.045",
-                                ec="none", fc='#4298af',
-                                mutation_aspect=mut_Aspect
+                                boxstyle="round,pad=0.0020,rounding_size=0.017",
+                                ec="none", fc=color,
+                                mutation_aspect=max(max(data_2022), max(data_2021))
                                 )
         patch.remove()
         new_patches.append(p_bbox)
-
     for patch in new_patches:
         ax.add_patch(patch)
 
-    sns.despine(top=True, right=True)
+    a = list(zip(data_2022, data_2021))
+    coordinates1 = list(np.concatenate(a).flat)
 
-    ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
-    plt.tick_params(labelsize=14.5,pad=6)
-    # for index, value in enumerate(y_axis):
-    #     plt.text(index, value * 1, '$' + str(value), fontsize=17, ha='center', va='top',
-    #              color='white', weight='bold')
+    def currency1(x):
+        """The two args are the value and tick position"""
+        s = '${:1.0f}'.format(x)
+        #     s = '$' + f'{x:,}'
+        if x >= 1e6:
+            s = '${:1.2f}M'.format(x * 1e-6)
+        elif x >= 1e3:
+            s = '${:1.2f}K'.format(x * 1e-3)
+        else:
+            s = '$' + f'{x:,}'
+        return s
 
-    plt.ticklabel_format(style='plain', axis='y')
-    plt.rcParams["font.family"] = "Open Sans"
+    xpos = []
+    for rect in ax.patches:
+        xpos.append(rect.get_x())
+    xpos = sorted(set(xpos))
 
-    def add_value_labels(ax, spacing=10):
-        # For each bar: Place a label
-        for rect in ax.patches:
+    for i in range(len(coordinates1)):
+        ax.annotate(
+            currency1(coordinates1[i]),  # Use `label` as label
+            (xpos[i] + 0.43 / 2, coordinates1[i]),  # Place label at end of the bar
+            xytext=(0, 5),  # Vertically shift label by `space`
+            textcoords="offset points",  # Interpret `xytext` as offset in points
+            fontsize=16,
+            weight='bold',
+            ha='center',  # Horizontally center label
+            va='bottom')
 
-            # Get X and Y placement of label from rect.
-            y_value = rect.get_height()
-            x_value = rect.get_x() + rect.get_width() / 2
-
-            # Number of points between bar and label. Change to your liking.
-            space = spacing
-            # Vertical alignment for positive values
-            va = 'bottom'
-
-            # If value of bar is negative: Place label below bar
-            if y_value < 0:
-                # Invert space to place label below
-                space *= -1
-                # Vertically align label at top
-                va = 'top'
-
-            # Use Y value as label and format number with one decimal place
-            label = "${:.1f}".format(y_value)
-
-
-            # Create annotation
-            ax.annotate(
-                label,  # Use `label` as label
-                (x_value, y_value),  # Place label at end of the bar
-                xytext=(0, space),  # Vertically shift label by `space`
-                textcoords="offset points",  # Interpret `xytext` as offset in points
-                fontsize = 17,
-                weight='bold',
-                ha='center',  # Horizontally center label
-                va=va)  # Vertically align label differently for
-            # positive and negative values.
-
-    # Call the function above. All the magic happens there.
-    add_value_labels(ax)
-    ax.yaxis.set_major_formatter(currency)
     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
         label.set_fontsize(17)
         label.set_fontweight('bold')
+
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('black')
+    plt.xticks(rotation=45)
     plt.tight_layout()
-
-    # plt.savefig('MOM.png')
-    image_stream = BytesIO()
-    plt.savefig(image_stream)
-    image_stream.seek(0)
-    my_base64_jpgData = base64.b64encode(image_stream.read())
-    graph = my_base64_jpgData.decode("utf-8")
-    return graph
-
+    plt.show()
+    return 'graph'
 
 def create_html_template(graph,current_month,year):
     insight_title = 'NET OPERATING INCOME : PSF'
@@ -222,8 +313,15 @@ def create_html_template(graph,current_month,year):
 
 if __name__=='__main__':
     try:
+        global year
         year = str(current_date.year)
         top5properties,top_5_values = current_top_5_property()
+        print(top5properties,top_5_values)
+        year = str(current_date.year - 1)
+        top5properties_last, top_5_values_last = current_top_5_property()
+
+        PLOT1(top_5_values,top5properties,top_5_values_last,top5properties_last)
+        print(top5properties_last, top_5_values_last)
 
 #
 #             # ==============PLOT=====================
