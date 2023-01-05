@@ -31,7 +31,7 @@ def sql_connection():
 
 def fetch_data_NOI():
     connection = sql_connection()
-    data = pd.read_sql("select  * from [dbo].[viewIncomeStatement] where PropertyManager <> ''  and  FiscalYear = {} and FiscalMonth = {} ".format(str(year)[-2:],month), connection)
+    data = pd.read_sql("select  * from [dbo].[viewIncomeStatement] where PropertyManager <> ''  and  FiscalYear = {} and FiscalMonth = {} and Ledger = 'AA' ".format(str(year)[-2:],month), connection)
     connection.close()
     return data
 
@@ -295,6 +295,7 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
 def create_html_template(graph,current_month,year):
     insight_title = 'NET OPERATING INCOME : PSF'
     insight_message = 'Top 5 National Tenants for {}'.format(calendar.month_name[current_month])
+
     insight_graph = graph
     connection = sql_connection()
     data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 14", connection)
