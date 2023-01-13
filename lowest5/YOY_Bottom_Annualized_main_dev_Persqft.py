@@ -9,7 +9,6 @@ from datetime import datetime, timedelta,date
 import pandas as pd
 import base64
 from io import BytesIO
-from emailto_send import *
 import pyodbc
 import matplotlib.pyplot as plt
 import numpy as np
@@ -83,6 +82,7 @@ def merge_with_sqft():
 
 def current_bottom_5_property():
     current_year_data = merge_with_sqft()
+    print(current_year_data)
     current_year_data = current_year_data[current_year_data['NOI_Persqft'] > 0]
     top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
@@ -185,16 +185,94 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
 
 def create_html_template(graph):
     insight_title = 'NET OPERATING INCOME : PSF'
-    insight_message = 'Bottom 5 National Tenants for YOY'
+    insight_message = 'Bottom 5 National Tenants YOY'
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 18", connection)
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 20", connection)
     connection.close()
 
     Html_Template = data.Body[0]
     final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
                                  insight_graph=insight_graph)
     return final,data
+
+
+def success_ran():
+    message = BasicMessage()
+    message.subject = 'File ran successfully'
+    message.html_body=f'''<!DOCTYPE html>
+    <html>
+    <body>
+
+    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job ran successfully for NOI Per sq.ft.</span></p> 
+
+    <div style="margin:auto;text-align: center;">
+    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
+    </div>
+
+    </body>
+    </html>
+    '''
+    # send the message
+    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+    message.add_to_email_address("rohit.mohite@annet.com")
+
+    client = SocketLabsClient(serverId, injectionApiKey)
+    response = client.send(message)
+    return response
+
+def sql_conn_fail():
+    message = BasicMessage()
+    message.subject = 'SQL connection failure'
+    message.html_body = f'''<!DOCTYPE html>
+            <html>
+            <body>
+
+            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed.</span></p>
+            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>&nbsp;Please add server IP to firewall</span></p>
+            <p><br></p>
+
+            <div style="margin:auto;text-align: center;">
+            <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
+            </div>
+
+            </body>
+            </html>
+            '''
+    # send the message
+    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+    message.add_to_email_address("rohit.mohite@annet.com")
+
+    client = SocketLabsClient(serverId, injectionApiKey)
+    response = client.send(message)
+    print(response)
+    return response
+
+
+def cron_fail():
+    message = BasicMessage()
+    message.subject = 'Crone Job failure'
+    message.html_body=f'''<!DOCTYPE html>
+    <html>
+    <body>
+
+    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed.</span></p>
+
+    <div style="margin:auto;text-align: center;">
+    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
+    </div>
+
+    </body>
+    </html>
+    '''
+    # send the message
+    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+    message.add_to_email_address("rohit.mohite@annet.com")
+
+    client = SocketLabsClient(serverId, injectionApiKey)
+    response = client.send(message)
+    return response
+
 
 
 if __name__=='__main__':
@@ -277,7 +355,7 @@ if __name__=='__main__':
 
     except Exception as e:
         print(e)
-        # sql_conn_fail()
+        sql_conn_fail()
 
 
 

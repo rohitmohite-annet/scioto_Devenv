@@ -9,7 +9,6 @@ from datetime import datetime, timedelta,date
 import pandas as pd
 import base64
 from io import BytesIO
-from emailto_send import *
 import pyodbc
 import matplotlib.pyplot as plt
 import numpy as np
@@ -199,6 +198,83 @@ def create_html_template(graph,current_month,year):
     return final,data
 
 
+def success_ran():
+    message = BasicMessage()
+    message.subject = 'File ran successfully'
+    message.html_body=f'''<!DOCTYPE html>
+    <html>
+    <body>
+
+    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job ran successfully for NOI Per sq.ft.</span></p> 
+
+    <div style="margin:auto;text-align: center;">
+    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
+    </div>
+
+    </body>
+    </html>
+    '''
+    # send the message
+    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+    message.add_to_email_address("rohit.mohite@annet.com")
+
+    client = SocketLabsClient(serverId, injectionApiKey)
+    response = client.send(message)
+    return response
+
+def sql_conn_fail():
+    message = BasicMessage()
+    message.subject = 'SQL connection failure'
+    message.html_body = f'''<!DOCTYPE html>
+            <html>
+            <body>
+
+            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed.</span></p>
+            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>&nbsp;Please add server IP to firewall</span></p>
+            <p><br></p>
+
+            <div style="margin:auto;text-align: center;">
+            <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
+            </div>
+
+            </body>
+            </html>
+            '''
+    # send the message
+    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+    message.add_to_email_address("rohit.mohite@annet.com")
+
+    client = SocketLabsClient(serverId, injectionApiKey)
+    response = client.send(message)
+    print(response)
+    return response
+
+
+def cron_fail():
+    message = BasicMessage()
+    message.subject = 'Crone Job failure'
+    message.html_body=f'''<!DOCTYPE html>
+    <html>
+    <body>
+
+    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed.</span></p>
+
+    <div style="margin:auto;text-align: center;">
+    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
+    </div>
+
+    </body>
+    </html>
+    '''
+    # send the message
+    message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+    message.add_to_email_address("rohit.mohite@annet.com")
+
+    client = SocketLabsClient(serverId, injectionApiKey)
+    response = client.send(message)
+    return response
+
+
 if __name__=='__main__':
     try:
         global year, month
@@ -234,11 +310,8 @@ if __name__=='__main__':
         graph = PLOT1(top_5_values,top5properties,top_5_values_last,top5properties_last,current_year,previous_year)
         print(top5properties_last, top_5_values_last)
 
-#
-        final,data_template = create_html_template(graph,month,year)
-        # print(final)
-        # print(data_template.head())
 
+        final,data_template = create_html_template(graph,month,year)
 
 
         try:
@@ -279,7 +352,7 @@ if __name__=='__main__':
 
     except Exception as e:
         print(e)
-        # sql_conn_fail()
+        sql_conn_fail()
 
 
 
