@@ -19,6 +19,9 @@ import json
 from socketlabs.injectionapi import SocketLabsClient
 from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress,BulkRecipient,BulkMessage
 
+serverId = 36101
+injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
+
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'
     database = 'qasciotodb'
