@@ -298,7 +298,7 @@ def create_html_template(graph,current_month,year):
 
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 14", connection)
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 19", connection)
     connection.close()
 
     Html_Template = data.Body[0]
@@ -344,8 +344,8 @@ if __name__=='__main__':
 
 #
         final,data_template = create_html_template(graph,month,year)
-        print(final)
-        print(data_template.head())
+        # print(final)
+        # print(data_template.head())
 
 
 
@@ -370,7 +370,7 @@ if __name__=='__main__':
                 message = BasicMessage()
                 message.subject = Subject
                 message.html_body = str(final)
-                message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+                message.from_email_address = EmailAddress("notify@4seeanalytics.com")
                 for to_item in EmailTOAddress.split(','):
                     message.add_to_email_address(to_item)
 

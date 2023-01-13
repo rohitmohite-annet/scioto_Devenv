@@ -26,17 +26,6 @@ def sql_connection():
     return cnxn
 
 
-def towritesql():
-    server = 'epsql-srv-scioto-4see.database.windows.net'
-    database = 'qasciotodb'
-    username = 'sciotosqladmin'
-    password = 'Ret$nQ2stkl21'
-
-    quoted = urllib.parse.quote_plus(
-        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
-    engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
-    return engine
-
 
 
 def persqft_data():
@@ -54,30 +43,6 @@ def persqft_data():
     Sqft_data = Sqft_data.loc[Sqft_data['Unit Square Feet'] > 0]
 
     return Sqft_data
-
-#
-# months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-# global year,month
-# todaysdate = date.today()
-# if (todaysdate.day) < 21:
-#     if (todaysdate.month == 1):
-#         month = 11
-#         year = todaysdate.year - 1
-#     elif todaysdate.month == 2:
-#         month = 12
-#         year = todaysdate.year - 1
-#     else:
-#         month = todaysdate.month - 2
-#         year = todaysdate.year
-# else:
-#     if (todaysdate.month == 1):
-#         month = 12
-#         year = todaysdate.year - 1
-#     else:
-#         month = todaysdate.month - 1
-#         year = todaysdate.year
-#
-# monthlist = tuple(months[:month])
 
 def fetch_data_NOI():
     connection = sql_connection()
@@ -314,44 +279,43 @@ if __name__=='__main__':
             y_axis = top_5_values
             graph = PLOT(x_axis,y_axis,percent_diff)
             final,data_template = create_html_template(graph)
-            print(final)
 
-#             try:
-# # =====================write the DataFrame to a table in the sql database
-#                 for index, row in data_template.iterrows():
-#                     InsightsMasterId = row['InsightsMasterId']
-#                     TemplateId = row['TemplateId']
-#                     EmailTOAddress = row['UserEmail']
-#                     EmailCCAddress = row['EmailCCAddress']
-#                     Subject = row['Subject']
-#                     Body = str(final)
-#                     SendToId = row['SendToId']
-#                     storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
-#                     params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
-#                     connection = sql_connection()
-#                     cursor = connection.cursor()
-#                     cursor.execute(storedProc, params)
-#                     connection.commit()
-#
-#
-#                     message = BasicMessage()
-#                     message.subject = Subject
-#                     message.html_body = str(final)
-#                     message.from_email_address = EmailAddress("rohit.mohite@annet.com")
-#
-#                     for to_item in EmailTOAddress.split(','):
-#                         message.add_to_email_address(to_item)
-#
-#                     for cc_item in EmailCCAddress.split(','):
-#                         message.add_cc_email_address(cc_item)
-#
-#                     client = SocketLabsClient(serverId, injectionApiKey)
-#                     response = client.send(message)
-#                     success_ran()
-#
-#             except Exception as e:
-#                 print("ERROR: " + str(e))
-#                 cron_fail()
+            try:
+# =====================write the DataFrame to a table in the sql database
+                for index, row in data_template.iterrows():
+                    InsightsMasterId = row['InsightsMasterId']
+                    TemplateId = row['TemplateId']
+                    EmailTOAddress = row['UserEmail']
+                    EmailCCAddress = row['EmailCCAddress']
+                    Subject = row['Subject']
+                    Body = str(final)
+                    SendToId = row['SendToId']
+                    storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
+                    params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
+                    connection = sql_connection()
+                    cursor = connection.cursor()
+                    cursor.execute(storedProc, params)
+                    connection.commit()
+
+
+                    message = BasicMessage()
+                    message.subject = Subject
+                    message.html_body = str(final)
+                    message.from_email_address = EmailAddress("notify@4seeanalytics.com")
+
+                    for to_item in EmailTOAddress.split(','):
+                        message.add_to_email_address(to_item)
+
+                    for cc_item in EmailCCAddress.split(','):
+                        message.add_cc_email_address(cc_item)
+
+                    client = SocketLabsClient(serverId, injectionApiKey)
+                    response = client.send(message)
+                    success_ran()
+
+            except Exception as e:
+                print("ERROR: " + str(e))
+                cron_fail()
         except Exception as e:
             print("ERROR: " + str(e))
             cron_fail()

@@ -188,7 +188,7 @@ def create_html_template(graph):
     insight_message = 'Top 5 National Tenants for YOY'
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 14", connection)
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 18", connection)
     connection.close()
 
     Html_Template = data.Body[0]
@@ -200,9 +200,6 @@ def create_html_template(graph):
 if __name__=='__main__':
     try:
         global year, months
-
-
-
         todaysdate = date.today()
         if (todaysdate.day) < 21:
 
@@ -216,7 +213,7 @@ if __name__=='__main__':
                 months = []
                 year = ''
         else:
-            if ((todaysdate.month == 1) or todaysdate.month == 2):
+            if ((todaysdate.month == 1) or (todaysdate.month == 2)):
                 months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
                 year = todaysdate.year - 1
             else:
@@ -239,9 +236,6 @@ if __name__=='__main__':
 
 #
         final,data_template = create_html_template(graph)
-        print(final)
-        print(data_template.head())
-
 
 
         try:
@@ -261,11 +255,11 @@ if __name__=='__main__':
                 cursor.execute(storedProc, params)
                 connection.commit()
 
-
+                # send mail to users
                 message = BasicMessage()
                 message.subject = Subject
                 message.html_body = str(final)
-                message.from_email_address = EmailAddress("rohit.mohite@annet.com")
+                message.from_email_address = EmailAddress("notify@4seeanalytics.com")
                 for to_item in EmailTOAddress.split(','):
                     message.add_to_email_address(to_item)
 
