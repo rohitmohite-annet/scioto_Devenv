@@ -84,121 +84,11 @@ def merge_with_sqft():
 def current_bottom_5_property():
     current_year_data = merge_with_sqft()
     current_year_data = current_year_data[current_year_data['NOI_Persqft'] > 0]
-    print(current_year_data.tail())
     top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
     return top5properties,top_5_values
 
-# def PLOT(x_axis,y_axis):
-#     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
-#     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
-#     ax.figure.set_size_inches(10, 6)
-#
-#     def currency(x, pos):
-#         """The two args are the value and tick position"""
-#         if x >= 1e6:
-#             s = '${:1.1f}M'.format(x * 1e-6)
-#         elif x >= 1e3:
-#             s = '${:1.0f}K'.format(x * 1e-3)
-#         else:
-#             s = '${:1.0f}'.format(x)
-#         return s
-#
-#     def change_width(ax, new_value):
-#         for patch in ax.patches:
-#             current_width = patch.get_width()
-#             diff = current_width - new_value
-#
-#             # we change the bar width
-#             patch.set_width(new_value)
-#
-#             # we recenter the bar
-#             patch.set_x(patch.get_x() + diff * .5)
-#
-#     change_width(ax, 0.6)
-#
-#     new_patches = []
-#     mut_Aspect = max(y_axis)
-#
-#     for patch in reversed(ax.patches):
-#         bb = patch.get_bbox()
-#
-#         p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
-#                                 abs(bb.width), abs(bb.height),
-#                                 boxstyle="round, pad=0.030,rounding_size = 0.045",
-#                                 ec="none", fc='#4298af',
-#                                 mutation_aspect=mut_Aspect
-#                                 )
-#         patch.remove()
-#         new_patches.append(p_bbox)
-#
-#     for patch in new_patches:
-#         ax.add_patch(patch)
-#
-#     sns.despine(top=True, right=True)
-#
-#     ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
-#     plt.tick_params(labelsize=14.5,pad=6)
-#     # for index, value in enumerate(y_axis):
-#     #     plt.text(index, value * 1, '$' + str(value), fontsize=17, ha='center', va='top',
-#     #              color='white', weight='bold')
-#
-#     plt.ticklabel_format(style='plain', axis='y')
-#     plt.rcParams["font.family"] = "Open Sans"
-#
-#     def add_value_labels(ax, spacing=10):
-#         # For each bar: Place a label
-#         for rect in ax.patches:
-#
-#             # Get X and Y placement of label from rect.
-#             y_value = rect.get_height()
-#             x_value = rect.get_x() + rect.get_width() / 2
-#
-#             # Number of points between bar and label. Change to your liking.
-#             space = spacing
-#             # Vertical alignment for positive values
-#             va = 'bottom'
-#
-#             # If value of bar is negative: Place label below bar
-#             if y_value < 0:
-#                 # Invert space to place label below
-#                 space *= -1
-#                 # Vertically align label at top
-#                 va = 'top'
-#
-#             # Use Y value as label and format number with one decimal place
-#             label = "${:.1f}".format(y_value)
-#
-#
-#             # Create annotation
-#             ax.annotate(
-#                 label,  # Use `label` as label
-#                 (x_value, y_value),  # Place label at end of the bar
-#                 xytext=(0, space),  # Vertically shift label by `space`
-#                 textcoords="offset points",  # Interpret `xytext` as offset in points
-#                 fontsize = 17,
-#                 weight='bold',
-#                 ha='center',  # Horizontally center label
-#                 va=va)  # Vertically align label differently for
-#             # positive and negative values.
-#
-#     # Call the function above. All the magic happens there.
-#     add_value_labels(ax)
-#     ax.yaxis.set_major_formatter(currency)
-#     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-#         label.set_fontsize(17)
-#         label.set_fontweight('bold')
-#     ax.spines['left'].set_color('black')
-#     ax.spines['bottom'].set_color('black')
-#     plt.tight_layout()
-#
-#     # plt.savefig('MOM.png')
-#     image_stream = BytesIO()
-#     plt.savefig(image_stream)
-#     image_stream.seek(0)
-#     my_base64_jpgData = base64.b64encode(image_stream.read())
-#     graph = my_base64_jpgData.decode("utf-8")
-#     return graph
+
 
 def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
     width = 0.4
@@ -346,7 +236,7 @@ if __name__=='__main__':
 
 #
         final,data_template = create_html_template(graph,month,year)
-        print(final)
+        # print(final)
         # print(data_template.head())
 
 

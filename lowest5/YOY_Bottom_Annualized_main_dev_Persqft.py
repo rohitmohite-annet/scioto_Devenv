@@ -81,12 +81,12 @@ def merge_with_sqft():
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
     return merged_sqft
 
-def current_top_5_property():
+def current_bottom_5_property():
     current_year_data = merge_with_sqft()
-    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['National_tenant'].to_list()
-    top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['NOI_Persqft'].to_list()
+    current_year_data = current_year_data[current_year_data['NOI_Persqft'] > 0]
+    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
+    top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
     return top5properties,top_5_values
-
 
 
 def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
@@ -185,7 +185,7 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
 
 def create_html_template(graph):
     insight_title = 'NET OPERATING INCOME : PSF'
-    insight_message = 'Top 5 National Tenants for YOY'
+    insight_message = 'Bottom 5 National Tenants for YOY'
     insight_graph = graph
     connection = sql_connection()
     data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 18", connection)
@@ -222,20 +222,21 @@ if __name__=='__main__':
 
 
         print(year,months)
-        top5properties,top_5_values = current_top_5_property()
+        top5properties,top_5_values = current_bottom_5_property()
         current_year = year
         print(top5properties,top_5_values)
 
 
         year = str(current_year - 1)
         previous_year = year
-        top5properties_last, top_5_values_last = current_top_5_property()
+        top5properties_last, top_5_values_last = current_bottom_5_property()
 
         graph = PLOT1(top_5_values,top5properties,top_5_values_last,top5properties_last,current_year,previous_year)
         print(top5properties_last, top_5_values_last)
 
 #
         final,data_template = create_html_template(graph)
+        print(final)
 
 
         try:
