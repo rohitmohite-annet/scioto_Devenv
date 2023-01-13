@@ -80,12 +80,14 @@ def merge_with_sqft():
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
     return merged_sqft
 
-def current_top_5_property():
-    current_year_data = merge_with_sqft()
-    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['National_tenant'].to_list()
-    top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['NOI_Persqft'].to_list()
-    return top5properties,top_5_values
 
+def current_bottom_5_property():
+    current_year_data = merge_with_sqft()
+    current_year_data = current_year_data[current_year_data['NOI_Persqft'] > 0]
+    print(current_year_data.tail())
+    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
+    top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
+    return top5properties,top_5_values
 
 # def PLOT(x_axis,y_axis):
 #     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
@@ -271,7 +273,7 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
             (xpos[i] + 0.43 / 2, coordinates1[i]),  # Place label at end of the bar
             xytext=(0, 5),  # Vertically shift label by `space`
             textcoords="offset points",  # Interpret `xytext` as offset in points
-            fontsize=16,
+            fontsize=18,
             weight='bold',
             ha='center',  # Horizontally center label
             va='bottom')
@@ -294,11 +296,11 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
 
 def create_html_template(graph,current_month,year):
     insight_title = 'NET OPERATING INCOME : PSF'
-    insight_message = 'Top 5 National Tenants for {}'.format(calendar.month_name[current_month])
+    insight_message = 'Bottom 5 National Tenants for {}'.format(calendar.month_name[current_month])
 
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 19", connection)
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 21", connection)
     connection.close()
 
     Html_Template = data.Body[0]
@@ -330,21 +332,21 @@ if __name__=='__main__':
                 month = todaysdate.month - 1
                 year = todaysdate.year
 
-        top5properties,top_5_values = current_top_5_property()
+        top5properties,top_5_values = current_bottom_5_property()
         current_year = year
         print(top5properties,top_5_values)
 
 
         year = str(current_year - 1)
         previous_year = year
-        top5properties_last, top_5_values_last = current_top_5_property()
+        top5properties_last, top_5_values_last = current_bottom_5_property()
 
         graph = PLOT1(top_5_values,top5properties,top_5_values_last,top5properties_last,current_year,previous_year)
         print(top5properties_last, top_5_values_last)
 
 #
         final,data_template = create_html_template(graph,month,year)
-        # print(final)
+        print(final)
         # print(data_template.head())
 
 
