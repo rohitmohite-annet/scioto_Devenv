@@ -39,7 +39,6 @@ def persqft_data():
     connection = sql_connection()
     sqft = pd.read_sql("select [PropertyID],[PropertyManager],[PropertyPKID],[Company Description],[Property Status],[Property Type],[Unit Square Feet] from [dbo].[viewPropertyUnitLeaseDetails] where PropertyManager <> '' ",connection)
     connection.close()
-    sqft.drop_duplicates(subset="PropertyID", inplace=True)
 
     Sqft_data = pd.DataFrame()
     for key, Promanage in enumerate(list(sqft['PropertyManager'].unique())):

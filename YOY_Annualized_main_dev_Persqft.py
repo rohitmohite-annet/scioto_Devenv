@@ -13,13 +13,12 @@ from emailto_send import *
 import pyodbc
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.patches as mpatches
-from sqlalchemy import create_engine
-import urllib
-import json
 from socketlabs.injectionapi import SocketLabsClient
 from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress,BulkRecipient,BulkMessage
 
+
+serverId = 36101
+injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'
     database = 'qasciotodb'
@@ -40,7 +39,6 @@ def persqft_data():
     connection = sql_connection()
     sqft = pd.read_sql("select [PropertyID],[PropertyManager],[PropertyPKID],[Company Description],[Property Status],[Property Type],[Unit Square Feet] from [dbo].[viewPropertyUnitLeaseDetails] where PropertyManager <> '' ",connection)
     connection.close()
-    sqft.drop_duplicates(subset="PropertyID", inplace=True)
 
     Sqft_data = pd.DataFrame()
     for key, Promanage in enumerate(list(sqft['PropertyManager'].unique())):
@@ -80,6 +78,7 @@ def merge_with_sqft():
     merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
     return merged_sqft
+
 
 def current_top_5_property():
     current_year_data = merge_with_sqft()
@@ -276,7 +275,7 @@ if __name__=='__main__':
 
     except Exception as e:
         print(e)
-        # sql_conn_fail()
+        sql_conn_fail()
 
 
 

@@ -383,7 +383,6 @@ if __name__=='__main__':
 
         graph = PLOT(x_axis,y_axis,percent_diff)
         final,data_template = create_html_template(graph)
-        print(final)
         try:
             # =====================write the DataFrame to a table in the sql database
             for index, row in data_template.iterrows():
@@ -417,10 +416,8 @@ if __name__=='__main__':
                 success_ran()
 
         except Exception as e:
-            print("ERROR: " + str(e))
             cron_fail()
     except Exception as e:
-        print("ERROR: " + str(e))
         cron_fail()
     except Exception as e:
         sql_conn_fail()

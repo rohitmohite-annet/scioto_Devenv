@@ -85,7 +85,7 @@ def merge_with_sqft():
 
 def current_bottom_5_property():
     current_year_data = merge_with_sqft()
-    print(current_year_data)
+
     current_year_data = current_year_data[current_year_data['NOI_Persqft'] > 0]
     top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
     top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
@@ -248,7 +248,7 @@ def sql_conn_fail():
 
     client = SocketLabsClient(serverId, injectionApiKey)
     response = client.send(message)
-    print(response)
+
     return response
 
 
@@ -317,7 +317,7 @@ if __name__=='__main__':
 
 #
         final,data_template = create_html_template(graph)
-        print(final)
+        # print(final)
 
 
         try:
