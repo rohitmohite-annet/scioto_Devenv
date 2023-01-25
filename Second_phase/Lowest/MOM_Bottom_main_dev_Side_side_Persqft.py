@@ -253,10 +253,9 @@ def success_ran(from_mailid,to_mailid):
     <html>
     <body>
 
-    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job ran successfully for NOI Per sq.ft.</span></p> 
+    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job ran successfully for Bottom 5 National Tenants MOM NOI Per sq.ft.</span></p> 
 
     <div style="margin:auto;text-align: center;">
-    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
     </div>
 
     </body>
@@ -264,7 +263,7 @@ def success_ran(from_mailid,to_mailid):
     '''
     # send the message
     message.from_email_address = EmailAddress(from_mailid)
-    message.add_to_email_address(to_mailid)
+    message.add_to_email_address(EmailAddress(to_mailid))
 
     client = SocketLabsClient(serverId, injectionApiKey)
     response = client.send(message)
@@ -277,11 +276,10 @@ def sql_conn_fail(from_mailid,to_mailid):
             <html>
             <body>
 
-            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed.</span></p>
+            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed for Bottom 5 National Tenants MOM NOI Per sq.ft.</span></p>
             <p><br></p>
 
             <div style="margin:auto;text-align: center;">
-            <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
             </div>
 
             </body>
@@ -289,7 +287,7 @@ def sql_conn_fail(from_mailid,to_mailid):
             '''
     # send the message
     message.from_email_address = EmailAddress(from_mailid)
-    message.add_to_email_address(to_mailid)
+    message.add_to_email_address(EmailAddress(to_mailid))
 
     client = SocketLabsClient(serverId, injectionApiKey)
     response = client.send(message)
@@ -304,10 +302,10 @@ def cron_fail(from_mailid,to_mailid):
     <html>
     <body>
 
-    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed.</span></p>
+    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed for Bottom 5 National Tenants MOM NOI Per sq.ft. </span></p>
 
     <div style="margin:auto;text-align: center;">
-    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
+    
     </div>
 
     </body>
@@ -315,7 +313,7 @@ def cron_fail(from_mailid,to_mailid):
     '''
     # send the message
     message.from_email_address = EmailAddress(from_mailid)
-    message.add_to_email_address(to_mailid)
+    message.add_to_email_address(EmailAddress(to_mailid))
 
     client = SocketLabsClient(serverId, injectionApiKey)
     response = client.send(message)
@@ -397,7 +395,7 @@ if __name__=='__main__':
                     cursor = connection.cursor()
                     cursor.execute(storedProc, params)
                     connection.commit()
-                    success_ran(str(FromEmailAddress),'rohit.mohite@annet.com')
+                    success_ran(str(FromEmailAddress),InsightsJobFailureNotification)
 
                 else:
                     EmailSendStatus = 'failure'
