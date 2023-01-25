@@ -9,6 +9,7 @@ from datetime import datetime, timedelta,date
 import pandas as pd
 import base64
 from io import BytesIO
+from emailto_send import *
 import pyodbc
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,9 +19,6 @@ import urllib
 import json
 from socketlabs.injectionapi import SocketLabsClient
 from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress,BulkRecipient,BulkMessage
-
-serverId = 33683
-injectionApiKey = "b8L9QzRp5d7B6Hew4T3F"
 
 def sql_connection():
     server = 'epsql-srv-scioto-4see.database.windows.net'
@@ -81,15 +79,123 @@ def merge_with_sqft():
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
     return merged_sqft
 
-
-def current_bottom_5_property():
+def current_top_5_property():
     current_year_data = merge_with_sqft()
-    current_year_data = current_year_data[current_year_data['NOI_Persqft'] > 0]
-    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['National_tenant'].to_list()
-    top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=True)[:5]['NOI_Persqft'].to_list()
+    top5properties = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['National_tenant'].to_list()
+    top_5_values = current_year_data.sort_values(by=['NOI_Persqft'], ascending=False)[:5]['NOI_Persqft'].to_list()
     return top5properties,top_5_values
 
 
+# def PLOT(x_axis,y_axis):
+#     sns.set(rc={'axes.facecolor': '#f6f6f6', 'figure.facecolor': '#f6f6f6'})
+#     ax = sns.barplot(x=x_axis, y=y_axis, joinstyle='bevel')
+#     ax.figure.set_size_inches(10, 6)
+#
+#     def currency(x, pos):
+#         """The two args are the value and tick position"""
+#         if x >= 1e6:
+#             s = '${:1.1f}M'.format(x * 1e-6)
+#         elif x >= 1e3:
+#             s = '${:1.0f}K'.format(x * 1e-3)
+#         else:
+#             s = '${:1.0f}'.format(x)
+#         return s
+#
+#     def change_width(ax, new_value):
+#         for patch in ax.patches:
+#             current_width = patch.get_width()
+#             diff = current_width - new_value
+#
+#             # we change the bar width
+#             patch.set_width(new_value)
+#
+#             # we recenter the bar
+#             patch.set_x(patch.get_x() + diff * .5)
+#
+#     change_width(ax, 0.6)
+#
+#     new_patches = []
+#     mut_Aspect = max(y_axis)
+#
+#     for patch in reversed(ax.patches):
+#         bb = patch.get_bbox()
+#
+#         p_bbox = FancyBboxPatch((bb.xmin, bb.ymin),
+#                                 abs(bb.width), abs(bb.height),
+#                                 boxstyle="round, pad=0.030,rounding_size = 0.045",
+#                                 ec="none", fc='#4298af',
+#                                 mutation_aspect=mut_Aspect
+#                                 )
+#         patch.remove()
+#         new_patches.append(p_bbox)
+#
+#     for patch in new_patches:
+#         ax.add_patch(patch)
+#
+#     sns.despine(top=True, right=True)
+#
+#     ax.tick_params(axis=u'both', which=u'both', length=0,pad=6)
+#     plt.tick_params(labelsize=14.5,pad=6)
+#     # for index, value in enumerate(y_axis):
+#     #     plt.text(index, value * 1, '$' + str(value), fontsize=17, ha='center', va='top',
+#     #              color='white', weight='bold')
+#
+#     plt.ticklabel_format(style='plain', axis='y')
+#     plt.rcParams["font.family"] = "Open Sans"
+#
+#     def add_value_labels(ax, spacing=10):
+#         # For each bar: Place a label
+#         for rect in ax.patches:
+#
+#             # Get X and Y placement of label from rect.
+#             y_value = rect.get_height()
+#             x_value = rect.get_x() + rect.get_width() / 2
+#
+#             # Number of points between bar and label. Change to your liking.
+#             space = spacing
+#             # Vertical alignment for positive values
+#             va = 'bottom'
+#
+#             # If value of bar is negative: Place label below bar
+#             if y_value < 0:
+#                 # Invert space to place label below
+#                 space *= -1
+#                 # Vertically align label at top
+#                 va = 'top'
+#
+#             # Use Y value as label and format number with one decimal place
+#             label = "${:.1f}".format(y_value)
+#
+#
+#             # Create annotation
+#             ax.annotate(
+#                 label,  # Use `label` as label
+#                 (x_value, y_value),  # Place label at end of the bar
+#                 xytext=(0, space),  # Vertically shift label by `space`
+#                 textcoords="offset points",  # Interpret `xytext` as offset in points
+#                 fontsize = 17,
+#                 weight='bold',
+#                 ha='center',  # Horizontally center label
+#                 va=va)  # Vertically align label differently for
+#             # positive and negative values.
+#
+#     # Call the function above. All the magic happens there.
+#     add_value_labels(ax)
+#     ax.yaxis.set_major_formatter(currency)
+#     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+#         label.set_fontsize(17)
+#         label.set_fontweight('bold')
+#     ax.spines['left'].set_color('black')
+#     ax.spines['bottom'].set_color('black')
+#     plt.tight_layout()
+#
+#     # plt.savefig('MOM.png')
+#     image_stream = BytesIO()
+#     plt.savefig(image_stream)
+#     image_stream.seek(0)
+#     my_base64_jpgData = base64.b64encode(image_stream.read())
+#     graph = my_base64_jpgData.decode("utf-8")
+#     return graph
 
 def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
     width = 0.4
@@ -164,7 +270,7 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
             (xpos[i] + 0.43 / 2, coordinates1[i]),  # Place label at end of the bar
             xytext=(0, 5),  # Vertically shift label by `space`
             textcoords="offset points",  # Interpret `xytext` as offset in points
-            fontsize=18,
+            fontsize=16,
             weight='bold',
             ha='center',  # Horizontally center label
             va='bottom')
@@ -185,141 +291,19 @@ def PLOT1(data_2022,NT_2022,data_2021,NT_2021,current_year,previous_year):
     graph = my_base64_jpgData.decode("utf-8")
     return graph
 
-def mail_link(data):
-    sample_string = str(data)
-    sample_string_bytes = sample_string.encode("ascii")
-    base64_bytes = base64.b64encode(sample_string_bytes)
-    base64_string = base64_bytes.decode("ascii")
-#     print(f"Encoded string: {base64_string}")
-    return base64_string
-
-def get_data_from_config():
-    storedProc = "Exec [GetSystemConfigurationSettings]"
-    connection = sql_connection()
-    sql_query = """SET NOCOUNT ON; EXEC [GetSystemConfigurationSettings];""".format(input)
-    df = pd.read_sql_query(sql_query, connection)
-    ClientEnvironmentURL = df.loc[df.SettingName == 'ClientEnvironmentURL', 'SettingValue'].values[0]
-    FromEmailAddress = df.loc[df.SettingName == 'FromEmailAddress', 'SettingValue'].values[0]
-    InsightsJobFailureNotification = df.loc[df.SettingName == 'InsightsJobFailureNotification', 'SettingValue'].values[0]
-    AlertJobFailureNotification = df.loc[df.SettingName == 'AlertJobFailureNotification', 'SettingValue'].values[0]
-    DollarImagesPath = df.loc[df.SettingName == 'DollarImagesPath', 'SettingValue'].values[0]
-    see4ImagesPath = df.loc[df.SettingName == '4seeImagesPath', 'SettingValue'].values[0]
-    RetransformImagesPath = df.loc[df.SettingName == 'RetransformImagesPath', 'SettingValue'].values[0]
-    SciotoBlobPath = df.loc[df.SettingName == 'SciotoBlobPath', 'SettingValue'].values[0]
-
-    return ClientEnvironmentURL, FromEmailAddress, InsightsJobFailureNotification,AlertJobFailureNotification, DollarImagesPath, see4ImagesPath, RetransformImagesPath, SciotoBlobPath
-
-
-
-def create_html_template(graph,current_month,useremail):
-
-    ClientEnvironmentURL, FromEmailAddress, InsightsJobFailureNotification, AlertJobFailureNotification, \
-    DollarImagesPath, see4ImagesPath, RetransformImagesPath, SciotoBlobPath = get_data_from_config()
-
-
+def create_html_template(graph,current_month,year):
     insight_title = 'NET OPERATING INCOME : PSF'
-    insight_message = '{}'.format(calendar.month_name[current_month])
+    insight_message = 'Top 5 National Tenants for {}'.format(calendar.month_name[current_month])
 
     insight_graph = graph
     connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 21", connection)
+    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 19", connection)
     connection.close()
 
-    yesfeedback = ClientEnvironmentURL + 'feedback/WWVz/' + mail_link(data['InsightsMasterId'].iloc[0]) + '/' + mail_link(
-        data['SendToId'].iloc[0]) + '/' + mail_link(data['UserEmail'].iloc[0])
-    #     print(yesfeedback)
-    nofeedback = ClientEnvironmentURL + 'feedback/Tm8=/' + mail_link(data['InsightsMasterId'].iloc[0]) + '/' + mail_link(
-        data['SendToId'].iloc[0]) + '/' + mail_link(data['UserEmail'].iloc[0])
-
-    #
-
     Html_Template = data.Body[0]
-    final_plot = Html_Template.format(blobpath = SciotoBlobPath,analytics_logo = see4ImagesPath,
-                                 dollor_logo = DollarImagesPath,details =ClientEnvironmentURL,
-                                 insight_message = insight_message,insight_graph = insight_graph,
-                                 yes_feedback = yesfeedback,no_feedback = nofeedback,
-                                 retransform_logo = RetransformImagesPath,email_setting = ClientEnvironmentURL,
-                                 user_email = useremail,unsubscribe = ClientEnvironmentURL,
-                                 email_preferences = ClientEnvironmentURL,privacy_policy ='',month = insight_message)
-
-    print(final_plot)
-    return final_plot,FromEmailAddress,InsightsJobFailureNotification
-
-
-def success_ran(from_mailid,to_mailid):
-    message = BasicMessage()
-    message.subject = 'File ran successfully'
-    message.html_body=f'''<!DOCTYPE html>
-    <html>
-    <body>
-
-    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job ran successfully for NOI Per sq.ft.</span></p> 
-
-    <div style="margin:auto;text-align: center;">
-    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
-    </div>
-
-    </body>
-    </html>
-    '''
-    # send the message
-    message.from_email_address = EmailAddress(from_mailid)
-    message.add_to_email_address(to_mailid)
-
-    client = SocketLabsClient(serverId, injectionApiKey)
-    response = client.send(message)
-    return response
-
-def sql_conn_fail(from_mailid,to_mailid):
-    message = BasicMessage()
-    message.subject = 'SQL connection failure'
-    message.html_body = f'''<!DOCTYPE html>
-            <html>
-            <body>
-
-            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed.</span></p>
-            <p><br></p>
-
-            <div style="margin:auto;text-align: center;">
-            <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
-            </div>
-
-            </body>
-            </html>
-            '''
-    # send the message
-    message.from_email_address = EmailAddress(from_mailid)
-    message.add_to_email_address(to_mailid)
-
-    client = SocketLabsClient(serverId, injectionApiKey)
-    response = client.send(message)
-    print(response)
-    return response
-
-
-def cron_fail(from_mailid,to_mailid):
-    message = BasicMessage()
-    message.subject = 'Crone Job failure'
-    message.html_body=f'''<!DOCTYPE html>
-    <html>
-    <body>
-
-    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed.</span></p>
-
-    <div style="margin:auto;text-align: center;">
-    <img src="https://www.4seeanalytics.com/dev/public/vendor/images/4see-portal-final.png" alt="logo">
-    </div>
-
-    </body>
-    </html>
-    '''
-    # send the message
-    message.from_email_address = EmailAddress(from_mailid)
-    message.add_to_email_address(to_mailid)
-
-    client = SocketLabsClient(serverId, injectionApiKey)
-    response = client.send(message)
-    return response
+    final = Html_Template.format(insight_title=insight_title, insight_message=insight_message,
+                                 insight_graph=insight_graph)
+    return final,data
 
 
 if __name__=='__main__':
@@ -345,21 +329,24 @@ if __name__=='__main__':
                 month = todaysdate.month - 1
                 year = todaysdate.year
 
-        top5properties,top_5_values = current_bottom_5_property()
+        top5properties,top_5_values = current_top_5_property()
         current_year = year
         print(top5properties,top_5_values)
 
 
         year = str(current_year - 1)
         previous_year = year
-        top5properties_last, top_5_values_last = current_bottom_5_property()
+        top5properties_last, top_5_values_last = current_top_5_property()
 
         graph = PLOT1(top_5_values,top5properties,top_5_values_last,top5properties_last,current_year,previous_year)
         print(top5properties_last, top_5_values_last)
 
-        connection = sql_connection()
-        data_template = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 21", connection)
-        connection.close()
+#
+        final,data_template = create_html_template(graph,month,year)
+        # print(final)
+        # print(data_template.head())
+
+
 
         try:
 # =====================write the DataFrame to a table in the sql database
@@ -369,15 +356,20 @@ if __name__=='__main__':
                 EmailTOAddress = row['UserEmail']
                 EmailCCAddress = row['EmailCCAddress']
                 Subject = row['Subject']
-                SendToId = row['SendToId']
-                final,FromEmailAddress,InsightsJobFailureNotification = create_html_template(graph=graph, current_month=month, useremail=EmailTOAddress)
-                print(final)
-
                 Body = str(final)
+                SendToId = row['SendToId']
+                storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
+                params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
+                connection = sql_connection()
+                cursor = connection.cursor()
+                cursor.execute(storedProc, params)
+                connection.commit()
+
+
                 message = BasicMessage()
                 message.subject = Subject
-                message.html_body = Body
-                message.from_email_address = EmailAddress(FromEmailAddress)
+                message.html_body = str(final)
+                message.from_email_address = EmailAddress("notify@4seeanalytics.com")
                 for to_item in EmailTOAddress.split(','):
                     message.add_to_email_address(to_item)
 
@@ -386,38 +378,15 @@ if __name__=='__main__':
 
                 client = SocketLabsClient(serverId, injectionApiKey)
                 response = client.send(message)
-                print(response)
-
-                if "Successful" in str(response):
-                    EmailSendStatus = 'success'
-                    storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?,@EmailSendStatus = ?"
-                    params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body, SendToId,
-                              EmailSendStatus)
-                    connection = sql_connection()
-                    cursor = connection.cursor()
-                    cursor.execute(storedProc, params)
-                    connection.commit()
-                    success_ran(str(FromEmailAddress),'rohit.mohite@annet.com')
-
-                else:
-                    EmailSendStatus = 'failure'
-                    storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?,@EmailSendStatus = ?"
-                    params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId,EmailSendStatus)
-                    connection = sql_connection()
-                    cursor = connection.cursor()
-                    cursor.execute(storedProc, params)
-                    connection.commit()
-                    cron_fail(str(FromEmailAddress),InsightsJobFailureNotification)
-
-
+                success_ran()
 
         except Exception as e:
             print("ERROR: " + str(e))
-            sql_conn_fail(str(FromEmailAddress), InsightsJobFailureNotification)
+            cron_fail()
 
     except Exception as e:
         print(e)
-        sql_conn_fail(str(FromEmailAddress),InsightsJobFailureNotification)
+        # sql_conn_fail()
 
 
 
