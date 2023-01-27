@@ -94,7 +94,7 @@ def merge_with_sqft():
     merged_sqft['NOI_Persqft'] = round((merged_sqft['NOI_amount']/merged_sqft['Unit Square Feet']),2)
     merged_sqft.dropna(subset=['NOI_Persqft'],inplace=True)
     merged_sqft = merged_sqft[['Index','National_tenant','KPI','YEAR','NOI_amount','Unit Square Feet','NOI_Persqft']]
-    merged_sqft.to_csv('mergesqft_{}'.format(year)+'.csv')
+
     return merged_sqft
 
 
