@@ -295,7 +295,7 @@ def success_ran(from_mailid,to_mailid):
     response = client.send(message)
     return response
 
-def sql_conn_fail(from_mailid,to_mailid):
+def sql_conn_fail(from_mailid,to_mailid,exception):
     message = BasicMessage()
     message.subject = 'SQL connection failure'
     message.html_body = f'''<!DOCTYPE html>
@@ -303,6 +303,8 @@ def sql_conn_fail(from_mailid,to_mailid):
             <body>
 
             <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed for Top 5 National Tenants YTM NOI Per sq.ft.</span></p>
+            <p><br></p>
+            <p>{exception}</p>
             <p><br></p>
 
             <div style="margin:auto;text-align: center;">
@@ -321,7 +323,7 @@ def sql_conn_fail(from_mailid,to_mailid):
     return response
 
 
-def cron_fail(from_mailid,to_mailid):
+def cron_fail(from_mailid,to_mailid,exception):
     message = BasicMessage()
     message.subject = 'Crone Job failure'
     message.html_body=f'''<!DOCTYPE html>
@@ -329,7 +331,9 @@ def cron_fail(from_mailid,to_mailid):
     <body>
 
     <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed for Top 5 National Tenants YTM NOI Per sq.ft.</span></p>
-
+    <p><br></p>
+    <p>{exception}</p>
+    <p><br></p>
     <div style="margin:auto;text-align: center;">
     </div>
 
@@ -458,8 +462,8 @@ if __name__=='__main__':
 
         except Exception as e:
             print("ERROR: " + str(e))
-            sql_conn_fail(str(FromEmailAddress), InsightsJobFailureNotification)
+            sql_conn_fail('notify@4seeanalytics.com','siddhi.utekar@annet.com',e)
 
     except Exception as e:
         print(e)
-        sql_conn_fail(str(FromEmailAddress), InsightsJobFailureNotification)
+        sql_conn_fail('notify@4seeanalytics.com','siddhi.utekar@annet.com',e)

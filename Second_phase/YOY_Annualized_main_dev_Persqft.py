@@ -264,14 +264,16 @@ def success_ran(from_mailid,to_mailid):
     response = client.send(message)
     return response
 
-def sql_conn_fail(from_mailid,to_mailid):
+def sql_conn_fail(from_mailid,to_mailid,exception):
     message = BasicMessage()
     message.subject = 'SQL connection failure'
     message.html_body = f'''<!DOCTYPE html>
             <html>
             <body>
 
-            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed for Top 5 National Tenants YOY NOI Per sq.ft.</span></p>
+            <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>SQL server connection failed for Top 5 National Tenants YTM NOI Per sq.ft.</span></p>
+            <p><br></p>
+            <p>{exception}</p>
             <p><br></p>
 
             <div style="margin:auto;text-align: center;">
@@ -290,15 +292,17 @@ def sql_conn_fail(from_mailid,to_mailid):
     return response
 
 
-def cron_fail(from_mailid,to_mailid):
+def cron_fail(from_mailid,to_mailid,exception):
     message = BasicMessage()
     message.subject = 'Crone Job failure'
     message.html_body=f'''<!DOCTYPE html>
     <html>
     <body>
 
-    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed for Top 5 National Tenants YOY NOI Per sq.ft.</span></p>
-
+    <p><span style='font-size:15px;line-height:115%;font-family:"Calibri","sans-serif";'>Cron job failed for Top 5 National Tenants YTM NOI Per sq.ft.</span></p>
+    <p><br></p>
+    <p>{exception}</p>
+    <p><br></p>
     <div style="margin:auto;text-align: center;">
     </div>
 
@@ -410,55 +414,8 @@ if __name__=='__main__':
 
         except Exception as e:
             print("ERROR: " + str(e))
-            sql_conn_fail(str(FromEmailAddress), InsightsJobFailureNotification)
+            sql_conn_fail('notify@4seeanalytics.com','siddhi.utekar@annet.com',e)
 
     except Exception as e:
         print(e)
-        sql_conn_fail(str(FromEmailAddress), InsightsJobFailureNotification)
-
-#         #
-#
-#
-#
-#         try:
-# # =====================write the DataFrame to a table in the sql database
-#             for index, row in data_template.iterrows():
-#                 InsightsMasterId = row['InsightsMasterId']
-#                 TemplateId = row['TemplateId']
-#                 EmailTOAddress = row['UserEmail']
-#                 EmailCCAddress = row['EmailCCAddress']
-#                 Subject = row['Subject']
-#                 Body = str(final)
-#                 SendToId = row['SendToId']
-#                 storedProc = "Exec [InsertEmailHistoryManageInsights] @InsightsMasterId = ?, @TemplateId = ?, @EmailTOAddress = ?, @EmailCCAddress = ?, @Subject = ?,@Body = ?,@SendToId = ?"
-#                 params = (InsightsMasterId, TemplateId, EmailTOAddress, EmailCCAddress, Subject, Body,SendToId)
-#                 connection = sql_connection()
-#                 cursor = connection.cursor()
-#                 cursor.execute(storedProc, params)
-#                 connection.commit()
-#
-#                 # send mail to users
-#                 message = BasicMessage()
-#                 message.subject = Subject
-#                 message.html_body = str(final)
-#                 message.from_email_address = EmailAddress("notify@4seeanalytics.com")
-#                 for to_item in EmailTOAddress.split(','):
-#                     message.add_to_email_address(to_item)
-#
-#                 for cc_item in EmailCCAddress.split(','):
-#                     message.add_cc_email_address(cc_item)
-#
-#                 client = SocketLabsClient(serverId, injectionApiKey)
-#                 response = client.send(message)
-#                 success_ran()
-#
-#         except Exception as e:
-#             print("ERROR: " + str(e))
-#             cron_fail()
-#
-#     except Exception as e:
-#         print(e)
-#         sql_conn_fail()
-#
-#
-#
+        sql_conn_fail('notify@4seeanalytics.com','siddhi.utekar@annet.com',e)
