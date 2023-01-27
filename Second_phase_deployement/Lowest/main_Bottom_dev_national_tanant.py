@@ -1,33 +1,43 @@
-import matplotlib.pyplot as plt
-import warnings
+import os
+import datetime
 import logging
-warnings.filterwarnings("ignore")
-from matplotlib.patches import FancyBboxPatch
-import seaborn as sns
-from datetime import datetime, timedelta,date
 import pandas as pd
+import numpy as np
+from pandas.tseries.offsets import DateOffset
+import pyodbc
+from datetime import date
+import datetime as dt
+import calendar
+import seaborn as sns
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch
+from matplotlib.pyplot import figure
 import base64
 from io import BytesIO
-import pyodbc
-from sqlalchemy import create_engine
-import urllib
-import json
 from socketlabs.injectionapi import SocketLabsClient
-from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress,BulkRecipient,BulkMessage
+from socketlabs.injectionapi.message.__imports__ import Attachment,BasicMessage,EmailAddress
+import urllib
+from sqlalchemy import create_engine
+import azure.functions as func
+import json
 
-
-serverId = 36101
-injectionApiKey = "Qz89ZcBp24EfPg6x7L5J"
+serverId = int(os.getenv('SMTPServerID'))
+injectionApiKey = os.getenv('SMTPInjectionApiKey')
+client = SocketLabsClient(serverId, injectionApiKey)
 
 def sql_connection():
-    server = 'epsql-srv-scioto-4see.database.windows.net'
-    database = 'qasciotodb'
-    username = 'sciotosqladmin'
-    password = 'Ret$nQ2stkl21'
-    cnxn = pyodbc.connect(
-        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
-    return cnxn
+    host = os.getenv('SciotoDbServer')
+    database = os.getenv('SciotoDbName')
+    user = os.getenv('SciotoDbAdminUsername')
+    password = os.getenv('SciotoDbAdminPassword')
+    driver='{SQL Server}'
+    Enabled = 'Enabled'
+    # connection = pyodbc.connect('DRIVER={};SERVER={};DATABASE={};UID={};PWD={};ColumnEncryption={};'.format('{SQL Server}',host,database,user,password,Enabled))
 
+    connection = pyodbc.connect('DRIVER={};SERVER={};DATABASE={};UID={};PWD={};ColumnEncryption={};'.format('{ODBC Driver 17 for SQL Server}',host,database,user,password,Enabled))
+
+    return connection
 
 
 
@@ -382,7 +392,10 @@ def cron_fail(from_mailid,to_mailid,exception):
     return response
 
 
-if __name__=='__main__':
+def main(mytimer: func.TimerRequest) -> None:
+    utc_timestamp = datetime.datetime.utcnow().replace(
+        tzinfo=datetime.timezone.utc).isoformat()
+
     try:
         global year, month, monthlist
         months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
@@ -506,3 +519,5 @@ if __name__=='__main__':
     except Exception as e:
         print(e)
         sql_conn_fail('notify@4seeanalytics.com','siddhi.utekar@annet.com',e)
+
+    logging.info('Python timer trigger function ran at %s', utc_timestamp)
