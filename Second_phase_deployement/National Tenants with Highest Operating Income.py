@@ -251,7 +251,8 @@ def get_data_from_config():
     return ClientEnvironmentURL, FromEmailAddress, InsightsJobFailureNotification,AlertJobFailureNotification, DollarImagesPath, see4ImagesPath, RetransformImagesPath, SciotoBlobPath
 
 
-def create_html_template(graph,useremail):
+
+def create_html_template(graph, InsightsMasterId, useremail, SendToId, Html_Template):
 
     ClientEnvironmentURL, FromEmailAddress, InsightsJobFailureNotification, AlertJobFailureNotification, \
     DollarImagesPath, see4ImagesPath, RetransformImagesPath, SciotoBlobPath = get_data_from_config()
@@ -259,19 +260,16 @@ def create_html_template(graph,useremail):
 
     insight_title = 'NET OPERATING INCOME : PSF'
     insight_graph = graph
-    connection = sql_connection()
-    data = pd.read_sql("select * from [dbo].[viewAllManageInsights] where InsightsMasterId = 14", connection)
-    connection.close()
 
-    yesfeedback = ClientEnvironmentURL + 'feedback/WWVz/' + mail_link(data['InsightsMasterId'].iloc[0]) + '/' + mail_link(
-        data['SendToId'].iloc[0]) + '/' + mail_link(data['UserEmail'].iloc[0])
-    #     print(yesfeedback)
-    nofeedback = ClientEnvironmentURL + 'feedback/Tm8=/' + mail_link(data['InsightsMasterId'].iloc[0]) + '/' + mail_link(
-        data['SendToId'].iloc[0]) + '/' + mail_link(data['UserEmail'].iloc[0])
+
+    yesfeedback = ClientEnvironmentURL + 'feedback/WWVz/' + mail_link(str(InsightsMasterId)) + '/' + mail_link(
+        str(SendToId)) + '/' + mail_link(str(useremail))
+    print(yesfeedback)
+    nofeedback = ClientEnvironmentURL + 'feedback/Tm8=/' + mail_link(str(InsightsMasterId)) + '/' + mail_link(
+        str(SendToId)) + '/' + mail_link(str(useremail))
 
     #
 
-    Html_Template = data.Body[0]
     final_plot = Html_Template.format(blobpath = SciotoBlobPath,analytics_logo = see4ImagesPath,
                                  dollor_logo = DollarImagesPath,details =ClientEnvironmentURL,
                                  insight_graph = insight_graph,
@@ -282,6 +280,7 @@ def create_html_template(graph,useremail):
 
     print(final_plot)
     return final_plot,FromEmailAddress,InsightsJobFailureNotification
+
 
 
 def success_ran(from_mailid,to_mailid):
@@ -431,8 +430,12 @@ def main(mytimer: func.TimerRequest) -> None:
                 EmailCCAddress = row['EmailCCAddress']
                 Subject = row['Subject']
                 SendToId = row['SendToId']
+                Html_Template = row['Body']
                 final, FromEmailAddress, InsightsJobFailureNotification = create_html_template(graph=graph,
-                                                                                               useremail=EmailTOAddress)
+                                                                                               InsightsMasterId=InsightsMasterId,
+                                                                                               useremail=EmailTOAddress,
+                                                                                               SendToId=SendToId,
+                                                                                               Html_Template=Html_Template)
                 print(final)
 
                 Body = str(final)
